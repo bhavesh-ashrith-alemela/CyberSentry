@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: cybersentry-backend
+    runtime: node
+    rootDir: backend
+    plan: free
+    region: oregon
+    buildCommand: npm install && npx playwright install --with-deps chromium && npm run build
+    startCommand: node dist/db/migrate.js && node dist/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cybersentry-db
+          property: connectionString
+      - key: FRONTEND_ORIGIN
+        value: https://cybersentry.vercel.app
+      - key: PLAYWRIGHT_HEADLESS
+        value: "true"
+      - key: SCAN_TIMEOUT_MS
+        value: "30000"
+
+databases:
+  - name: cybersentry-db
+    plan: free
+    region: oregon
+    databaseName: cybersentry
+    user: cybersentry
