@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Shield, Activity, History, GitCompare, ExternalLink } from "lucide-react";
+import { Shield, Activity, History, GitCompare } from "lucide-react";
 import { api } from "@/lib/api";
 
 export function Navbar() {
@@ -29,31 +29,30 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: "/", label: "New Scan", icon: Activity },
-    { href: "/history", label: "Scan History", icon: History },
-    { href: "/compare", label: "Compare", icon: GitCompare },
+    { href: "/", label: "New Audit", icon: Activity },
+    { href: "/history", label: "Audit History", icon: History },
+    { href: "/compare", label: "Comparison", icon: GitCompare },
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-cyber-border/80 bg-cyber-dark/85 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-sand-300 bg-sand-50/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-cyber-card border border-cyan-500/30 text-cyber-accent group-hover:border-cyan-400/60 transition-colors">
-            <Shield className="h-5 w-5 transition-transform group-hover:scale-110" />
-            <div className="absolute inset-0 rounded-lg bg-cyan-500/10 blur-sm -z-10" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-forest-800 text-sand-50 group-hover:bg-forest-900 transition-colors shadow-subtle">
+            <Shield className="h-4.5 w-4.5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-lg tracking-wider text-slate-100">
-                CYBER<span className="text-cyber-accent">SENTRY</span>
+              <span className="font-bold text-base tracking-wider text-forest-950">
+                CYBER<span className="text-forest-700 font-light">/SENTRY</span>
               </span>
-              <span className="rounded bg-cyan-500/10 px-1.5 py-0.5 text-[10px] font-mono text-cyan-400 border border-cyan-500/20">
+              <span className="rounded px-1.5 py-0.5 text-[10px] font-mono bg-sand-200 text-forest-700 border border-sand-300">
                 v1.0
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-mono hidden sm:block">
-              Web Tracking Transparency Platform
+            <p className="text-[11px] text-forest-500 font-mono hidden sm:block">
+              Explainable Privacy Transparency
             </p>
           </div>
         </Link>
@@ -69,10 +68,10 @@ export function Navbar() {
                 href={item.href}
                 title={item.label}
                 aria-label={item.label}
-                className={`flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                className={`flex items-center gap-2 px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-sm"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                    ? "bg-sand-200 text-forest-950 border border-sand-400 font-semibold shadow-subtle"
+                    : "text-forest-700 hover:text-forest-950 hover:bg-sand-100"
                 }`}
               >
                 <Icon className="h-4 w-4 shrink-0" />
@@ -85,12 +84,12 @@ export function Navbar() {
         {/* Backend Connectivity Status */}
         <div className="hidden md:flex items-center gap-2 text-xs font-mono">
           <div
-            className={`flex items-center gap-2 px-2.5 py-1 rounded-full border ${
+            className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs ${
               backendOnline === true
-                ? "bg-emerald-950/40 text-emerald-400 border-emerald-500/30"
+                ? "bg-forest-50 text-forest-800 border-forest-200"
                 : backendOnline === false
-                ? "bg-rose-950/40 text-rose-400 border-rose-500/30"
-                : "bg-slate-900 text-slate-400 border-slate-700"
+                ? "bg-rust-50 text-rust-800 border-rust-200"
+                : "bg-sand-100 text-forest-500 border-sand-300"
             }`}
             title={
               backendOnline === true
@@ -101,20 +100,20 @@ export function Navbar() {
             }
           >
             <span
-              className={`h-2 w-2 rounded-full ${
+              className={`h-1.5 w-1.5 rounded-full ${
                 backendOnline === true
-                  ? "bg-emerald-400 animate-pulse"
+                  ? "bg-forest-600"
                   : backendOnline === false
-                  ? "bg-rose-400"
-                  : "bg-slate-400"
+                  ? "bg-rust-600"
+                  : "bg-sand-400"
               }`}
             />
             <span>
               {backendOnline === true
-                ? "API Connected"
+                ? "API Operational"
                 : backendOnline === false
                 ? "API Offline"
-                : "Connecting..."}
+                : "Checking..."}
             </span>
           </div>
         </div>

@@ -34,19 +34,19 @@ export function StatusStepper({
 
   if (status === "failed") {
     return (
-      <div className="max-w-2xl mx-auto p-8 rounded-2xl bg-cyber-card border border-rose-500/40 shadow-2xl text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-500/10 text-rose-400 border border-rose-500/30 mx-auto mb-4">
-          <AlertOctagon className="h-8 w-8" />
+      <div className="max-w-2xl mx-auto p-8 rounded-2xl bg-white border border-rust-200 shadow-sm text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-rust-50 text-rust-700 border border-rust-200 mx-auto mb-4">
+          <AlertOctagon className="h-7 w-7" />
         </div>
 
-        <h2 className="text-2xl font-bold text-slate-100">Scan Execution Failed</h2>
-        <p className="mt-2 text-sm text-slate-400 font-mono break-all">{url}</p>
+        <h2 className="text-2xl font-bold text-forest-950 tracking-tight">Scan Execution Failed</h2>
+        <p className="mt-2 text-xs text-sand-600 font-mono break-all">{url}</p>
 
-        <div className="mt-6 p-4 rounded-xl bg-black/40 border border-rose-500/30 text-left">
-          <span className="text-xs font-mono uppercase tracking-wider text-rose-400 block mb-1">
+        <div className="mt-6 p-4 rounded-xl bg-sand-50 border border-rust-200/80 text-left">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-rust-700 block mb-1 font-semibold">
             Engine Diagnostic Error
           </span>
-          <p className="text-xs font-mono text-slate-200 leading-relaxed">
+          <p className="text-xs font-mono text-forest-900 leading-relaxed">
             {errorMessage || "The crawler encountered a timeout or unresolvable connection error."}
           </p>
         </div>
@@ -54,7 +54,7 @@ export function StatusStepper({
         <div className="mt-8 flex items-center justify-center gap-4">
           <Link
             href="/"
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors border border-slate-700"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-medium bg-sand-100 text-forest-900 hover:bg-sand-200 transition-colors border border-sand-300"
           >
             <ArrowLeft className="h-4 w-4" />
             <span>Try Another Website</span>
@@ -62,7 +62,7 @@ export function StatusStepper({
           {onRetry && (
             <button
               onClick={onRetry}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-rose-500 text-white hover:bg-rose-400 transition-colors shadow-lg shadow-rose-500/20"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-forest-900 text-sand-50 hover:bg-forest-800 transition-colors shadow-sm"
             >
               <RefreshCw className="h-4 w-4" />
               <span>Retry Audit</span>
@@ -74,27 +74,22 @@ export function StatusStepper({
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-8 rounded-2xl bg-cyber-card border border-cyber-border shadow-2xl">
-      {/* Radar Animation & Header */}
+    <div className="max-w-2xl mx-auto p-8 rounded-2xl bg-white border border-sand-300 shadow-sm">
+      {/* Calm Status Header */}
       <div className="flex flex-col items-center text-center mb-8">
-        <div className="relative flex h-24 w-24 items-center justify-center mb-4">
-          {/* Animated radar rings */}
-          <div className="absolute inset-0 rounded-full border border-cyan-500/20 animate-ping" />
-          <div className="absolute inset-2 rounded-full border border-cyan-500/40 animate-pulse" />
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-cyan-950/40 text-cyan-400 border border-cyan-500/50 shadow-lg shadow-cyan-500/20">
-            <Loader2 className="h-8 w-8 animate-spin" />
-          </div>
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-forest-50 border border-forest-200 text-forest-800 mb-4">
+          <Loader2 className="h-7 w-7 animate-spin" />
         </div>
 
-        <span className="px-3 py-1 rounded-full text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 mb-2">
+        <span className="px-3 py-1 rounded-full text-[11px] font-mono font-medium tracking-wide bg-forest-50 text-forest-800 border border-forest-200 mb-2">
           STATUS: {status.toUpperCase()}
         </span>
-        <h2 className="text-2xl font-bold text-slate-100">Live Privacy Audit in Progress</h2>
-        <p className="mt-1 text-xs text-slate-400 font-mono break-all">{url}</p>
+        <h2 className="text-2xl font-bold text-forest-950 tracking-tight">Privacy Audit in Progress</h2>
+        <p className="mt-1 text-xs text-sand-600 font-mono break-all">{url}</p>
       </div>
 
       {/* Stepper Timeline */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {STAGES.map((stg, i) => {
           const isDone = i < activeIndex;
           const isCurrent = i === activeIndex;
@@ -104,19 +99,19 @@ export function StatusStepper({
               key={stg.id}
               className={`p-3.5 rounded-xl border transition-all flex items-start gap-3.5 ${
                 isCurrent
-                  ? "bg-cyan-950/20 border-cyan-500/40 shadow-sm"
+                  ? "bg-forest-50/80 border-forest-300 text-forest-950 shadow-xs"
                   : isDone
-                  ? "bg-slate-900/40 border-slate-800 text-slate-400"
-                  : "bg-slate-900/10 border-slate-800/40 opacity-40 text-slate-500"
+                  ? "bg-white border-sand-200 text-sand-700"
+                  : "bg-sand-50/50 border-sand-200/60 opacity-60 text-sand-500"
               }`}
             >
               <div className="mt-0.5 shrink-0">
                 {isDone ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  <CheckCircle2 className="h-4 w-4 text-forest-700" />
                 ) : isCurrent ? (
-                  <Loader2 className="h-4 w-4 text-cyan-400 animate-spin" />
+                  <Loader2 className="h-4 w-4 text-forest-800 animate-spin" />
                 ) : (
-                  <div className="h-4 w-4 rounded-full border border-slate-700 text-[10px] flex items-center justify-center font-mono">
+                  <div className="h-4 w-4 rounded-full border border-sand-300 text-[10px] text-sand-500 flex items-center justify-center font-mono">
                     {i + 1}
                   </div>
                 )}
@@ -124,21 +119,21 @@ export function StatusStepper({
 
               <div>
                 <h4
-                  className={`text-sm font-semibold ${
-                    isCurrent ? "text-cyan-300" : isDone ? "text-slate-200" : "text-slate-500"
+                  className={`text-xs font-semibold ${
+                    isCurrent ? "text-forest-950" : isDone ? "text-forest-900" : "text-sand-500"
                   }`}
                 >
                   {stg.label}
                 </h4>
-                <p className="text-xs text-slate-400 mt-0.5">{stg.desc}</p>
+                <p className="text-[11px] text-sand-600 mt-0.5">{stg.desc}</p>
               </div>
             </div>
           );
         })}
       </div>
 
-      <div className="mt-6 pt-4 border-t border-cyber-border text-center text-xs text-slate-500 font-mono">
-        Playwright Chromium crawling with active network listener. Please do not refresh.
+      <div className="mt-6 pt-4 border-t border-sand-200 text-center text-xs text-sand-500 font-mono">
+        Playwright Chromium crawling with active network telemetry listener.
       </div>
     </div>
   );

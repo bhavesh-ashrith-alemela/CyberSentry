@@ -4,16 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Shield,
-  Search,
   ArrowRight,
   Globe,
   Sliders,
   FileCheck2,
   AlertTriangle,
-  Lock,
   Cpu,
   Layers,
-  Sparkles,
+  CheckCircle2,
+  Lock,
+  Compass,
 } from "lucide-react";
 import { api } from "@/lib/api";
 
@@ -22,6 +22,14 @@ const QUICK_SITES = [
   { name: "Wikipedia", url: "https://www.wikipedia.org" },
   { name: "GitHub", url: "https://github.com" },
   { name: "BBC News", url: "https://www.bbc.com" },
+];
+
+const AUDIT_STAGES = [
+  { step: "01", title: "Target & SSRF Validation", desc: "DNS resolution, protocol verification, and strict RFC-1918 CIDR IP restrictions." },
+  { step: "02", title: "Isolated Browser Sandbox", desc: "Controlled headless Chromium session launched with clean storage and media blockers." },
+  { step: "03", title: "Telemetry Interception", desc: "Real-time capture of cookies, third-party requests, and outbound tracking beacons." },
+  { step: "04", title: "Consent Architecture Audit", desc: "Inspection of CMP presence, button parity, and option preselection heuristics." },
+  { step: "05", title: "Deterministic Scoring", desc: "Rule-based mathematical evaluation yielding an explainable score from 0 to 100." },
 ];
 
 export default function HomePage() {
@@ -40,13 +48,11 @@ export default function HomePage() {
       return;
     }
 
-    // Auto-prefix https:// if missing
     if (!/^https?:\/\//i.test(targetUrl)) {
       targetUrl = `https://${targetUrl}`;
       setUrl(targetUrl);
     }
 
-    // Basic domain validation
     try {
       const parsed = new URL(targetUrl);
       if (!parsed.hostname.includes(".")) {
@@ -67,7 +73,7 @@ export default function HomePage() {
         throw new Error(res.error?.message || "Failed to initiate scan.");
       }
     } catch (err: any) {
-      setError(err.message || "Failed to start website audit. Please try again.");
+      setError(err.message || "Failed to start website audit. Please verify the URL and try again.");
       setLoading(false);
     }
   };
@@ -78,38 +84,42 @@ export default function HomePage() {
   };
 
   return (
-    <div className="relative overflow-hidden py-12 sm:py-20">
+    <div className="py-16 sm:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Hero Section */}
-        <div className="text-center max-w-3xl mx-auto">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs font-mono text-cyan-400 mb-6 shadow-sm">
-            <Shield className="h-3.5 w-3.5" />
-            <span>EXPLAINABLE PRIVACY TRANSPARENCY AUDIT</span>
+        
+        {/* Editorial Hero Section */}
+        <div className="max-w-4xl mx-auto text-center">
+          
+          {/* Eyebrow Pill */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-forest-50 border border-forest-200 text-xs font-mono text-forest-800 mb-8 shadow-subtle">
+            <Shield className="h-3.5 w-3.5 text-forest-700" />
+            <span className="tracking-wide">EXPLAINABLE WEB PRIVACY & TRACKING INTELLIGENCE</span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-100 leading-tight">
-            Uncover Hidden Web Trackers &{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400">
-              Consent Dark Patterns
+          {/* Headline */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-forest-950 leading-[1.12]">
+            Auditing Web Privacy Through Observable Telemetry &{" "}
+            <span className="text-forest-700 underline decoration-forest-300 underline-offset-8">
+              Deterministic Proof
             </span>
           </h1>
 
-          <p className="mt-5 text-base sm:text-lg text-slate-400 leading-relaxed max-w-2xl mx-auto">
+          {/* Subheading */}
+          <p className="mt-6 text-base sm:text-lg text-forest-700 leading-relaxed max-w-2xl mx-auto font-sans">
             Submit any public website URL. CyberSentry launches a controlled Playwright
             headless browser session, collects tracking scripts and cookies, analyzes CMP
-            consent choices, and delivers an explainable, evidence-based audit.
+            consent choices, and delivers an evidence-based audit.
           </p>
 
-          {/* URL Input Form */}
+          {/* URL Input Form Console */}
           <form
             onSubmit={handleSubmit}
-            className="mt-8 max-w-2xl mx-auto"
+            className="mt-10 max-w-2xl mx-auto"
             noValidate
           >
-            <div className="relative flex flex-col sm:flex-row items-stretch gap-2 p-2 rounded-2xl bg-cyber-card border border-cyber-border focus-within:border-cyan-500/50 shadow-2xl transition-all">
+            <div className="relative flex flex-col sm:flex-row items-stretch gap-2 p-2 rounded-2xl bg-white border border-sand-400 shadow-card focus-within:border-forest-700 focus-within:ring-2 focus-within:ring-forest-700/10 transition-all">
               <div className="relative flex-1 flex items-center">
-                <Globe className="absolute left-4 h-5 w-5 text-slate-500" />
+                <Globe className="absolute left-4 h-5 w-5 text-forest-500" />
                 <input
                   type="url"
                   id="target-url"
@@ -121,23 +131,23 @@ export default function HomePage() {
                     if (error) setError(null);
                   }}
                   disabled={loading}
-                  className="w-full pl-12 pr-4 py-3 bg-transparent text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none"
+                  className="w-full pl-12 pr-4 py-3 bg-transparent text-sm font-mono text-forest-950 placeholder-forest-400 focus:outline-none"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white bg-gradient-to-r from-cyan-600 to-cyan-500 hover:from-cyan-500 hover:to-cyan-400 disabled:opacity-50 transition-all shadow-lg shadow-cyan-600/25 shrink-0"
+                className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-medium text-white bg-forest-800 hover:bg-forest-900 active:bg-forest-950 disabled:opacity-50 transition-all shadow-subtle shrink-0"
               >
                 {loading ? (
                   <>
                     <span className="h-4 w-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                    <span>Launching Crawler...</span>
+                    <span>Launching Sandbox...</span>
                   </>
                 ) : (
                   <>
-                    <span>Scan Website</span>
+                    <span>Run Privacy Audit</span>
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}
@@ -146,22 +156,22 @@ export default function HomePage() {
 
             {/* Validation Feedback */}
             {error && (
-              <div className="mt-3 p-3 rounded-xl bg-rose-950/40 border border-rose-500/40 text-xs font-mono text-rose-300 text-left flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
+              <div className="mt-4 p-3.5 rounded-xl bg-rust-50 border border-rust-200 text-xs font-mono text-rust-800 text-left flex items-center gap-2.5">
+                <AlertTriangle className="h-4 w-4 text-rust-700 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
           </form>
 
-          {/* Quick-test Suggestions */}
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-slate-400">
-            <span className="text-slate-500">Quick Audits:</span>
+          {/* Quick-Audit Chips */}
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-forest-600">
+            <span className="text-forest-500">Sample Audits:</span>
             {QUICK_SITES.map((site) => (
               <button
                 key={site.url}
                 type="button"
                 onClick={() => handleQuickSelect(site.url)}
-                className="px-2.5 py-1 rounded-md bg-slate-900/60 border border-slate-800 hover:border-cyan-500/40 hover:text-cyan-300 transition-colors"
+                className="px-3 py-1 rounded-full bg-sand-100 border border-sand-300 text-forest-700 hover:bg-sand-200 hover:text-forest-950 hover:border-sand-400 transition-colors shadow-subtle"
               >
                 {site.name}
               </button>
@@ -169,52 +179,118 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Feature Highlights Grid */}
-        <div className="mt-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Card 1 */}
-          <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border hover:border-cyan-500/30 transition-all">
-            <div className="h-10 w-10 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center mb-4">
-              <Cpu className="h-5 w-5" />
-            </div>
-            <h3 className="text-base font-bold text-slate-100">Playwright Crawler</h3>
-            <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-              Runs inside isolated, headless Chromium sandboxes with real-time network request interception and automated route-level SSRF defense.
+        {/* Section Divider */}
+        <div className="my-20 border-t border-sand-300" />
+
+        {/* Core Architectural Pillars */}
+        <div>
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <h2 className="text-xs font-mono uppercase tracking-widest text-forest-600">
+              Platform Architecture
+            </h2>
+            <p className="mt-2 text-2xl sm:text-3xl font-bold tracking-tight text-forest-950">
+              Engineered for Transparent Research
             </p>
           </div>
 
-          {/* Card 2 */}
-          <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border hover:border-emerald-500/30 transition-all">
-            <div className="h-10 w-10 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center mb-4">
-              <Sliders className="h-5 w-5" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Pillar 1 */}
+            <div className="p-6 rounded-2xl bg-white border border-sand-300 shadow-subtle hover:border-forest-600 transition-all flex flex-col justify-between">
+              <div>
+                <div className="h-10 w-10 rounded-xl bg-sand-100 text-forest-800 border border-sand-300 flex items-center justify-center mb-4">
+                  <Cpu className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-bold text-forest-950">Playwright Sandbox</h3>
+                <p className="mt-2 text-xs text-forest-700 leading-relaxed">
+                  Crawl runs in an ephemeral, incognito Chromium session with full route guards, active redirect defense, and internal CIDR SSRF rejection.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-sand-200 text-[11px] font-mono text-forest-500">
+                Sandboxed Execution
+              </div>
             </div>
-            <h3 className="text-base font-bold text-slate-100">Dark Pattern Heuristics</h3>
-            <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-              Identifies asymmetric consent friction where &quot;Accept All&quot; is prominent on layer 1, while &quot;Reject&quot; is hidden or buried behind settings.
-            </p>
-          </div>
 
-          {/* Card 3 */}
-          <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border hover:border-orange-500/30 transition-all">
-            <div className="h-10 w-10 rounded-xl bg-orange-500/10 text-orange-400 border border-orange-500/20 flex items-center justify-center mb-4">
-              <Layers className="h-5 w-5" />
+            {/* Pillar 2 */}
+            <div className="p-6 rounded-2xl bg-white border border-sand-300 shadow-subtle hover:border-forest-600 transition-all flex flex-col justify-between">
+              <div>
+                <div className="h-10 w-10 rounded-xl bg-sand-100 text-forest-800 border border-sand-300 flex items-center justify-center mb-4">
+                  <Sliders className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-bold text-forest-950">Dark Pattern Heuristics</h3>
+                <p className="mt-2 text-xs text-forest-700 leading-relaxed">
+                  Detects choice asymmetry: banners presenting prominent 1-click &quot;Accept All&quot; buttons while burying refusal options behind settings layers.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-sand-200 text-[11px] font-mono text-forest-500">
+                Choice Architecture
+              </div>
             </div>
-            <h3 className="text-base font-bold text-slate-100">Pre-Consent Auditing</h3>
-            <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-              Detects third-party cookies and tracking beacons executing immediately on page landing before the visitor gives affirmative consent.
-            </p>
-          </div>
 
-          {/* Card 4 */}
-          <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border hover:border-purple-500/30 transition-all">
-            <div className="h-10 w-10 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center mb-4">
-              <FileCheck2 className="h-5 w-5" />
+            {/* Pillar 3 */}
+            <div className="p-6 rounded-2xl bg-white border border-sand-300 shadow-subtle hover:border-forest-600 transition-all flex flex-col justify-between">
+              <div>
+                <div className="h-10 w-10 rounded-xl bg-sand-100 text-forest-800 border border-sand-300 flex items-center justify-center mb-4">
+                  <Layers className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-bold text-forest-950">Pre-Consent Auditing</h3>
+                <p className="mt-2 text-xs text-forest-700 leading-relaxed">
+                  Isolates third-party cookies and advertising telemetry beacons executing on initial page landing prior to explicit visitor agreement.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-sand-200 text-[11px] font-mono text-forest-500">
+                ePrivacy Compliance
+              </div>
             </div>
-            <h3 className="text-base font-bold text-slate-100">100% Explainable</h3>
-            <p className="mt-2 text-xs text-slate-400 leading-relaxed">
-              Every score deduction is mathematically deterministic and mapped to code evidence stored in PostgreSQL. Zero LLM hallucinations.
-            </p>
+
+            {/* Pillar 4 */}
+            <div className="p-6 rounded-2xl bg-white border border-sand-300 shadow-subtle hover:border-forest-600 transition-all flex flex-col justify-between">
+              <div>
+                <div className="h-10 w-10 rounded-xl bg-sand-100 text-forest-800 border border-sand-300 flex items-center justify-center mb-4">
+                  <FileCheck2 className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-bold text-forest-950">100% Explainable</h3>
+                <p className="mt-2 text-xs text-forest-700 leading-relaxed">
+                  Every deduction is calculated through open, rule-based algorithms with audit trails persisted in PostgreSQL. Zero generative hallucinations.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-sand-200 text-[11px] font-mono text-forest-500">
+                Deterministic Scoring
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Audit Pipeline Stages */}
+        <div className="mt-24 p-8 sm:p-10 rounded-3xl bg-sand-100/70 border border-sand-300">
+          <div className="max-w-2xl mb-8">
+            <h3 className="text-xs font-mono uppercase tracking-widest text-forest-600">
+              Inspection Lifecycle
+            </h3>
+            <h4 className="text-2xl font-bold text-forest-950 mt-1">
+              Five-Stage Autonomous Audit Pipeline
+            </h4>
+            <p className="text-xs text-forest-700 font-mono mt-1">
+              Each URL undergoes a standardized sequence of security verification, browser execution, and deterministic evaluation.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {AUDIT_STAGES.map((stg) => (
+              <div key={stg.step} className="p-5 rounded-xl bg-white border border-sand-300 shadow-subtle flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-mono font-bold text-forest-700 block mb-2">
+                    {stg.step}
+                  </span>
+                  <h5 className="text-sm font-bold text-forest-950">{stg.title}</h5>
+                  <p className="text-xs text-forest-600 mt-2 leading-relaxed">
+                    {stg.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
       </div>
     </div>
   );

@@ -109,25 +109,25 @@ function CompareContent() {
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-sand-300 shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Link
               href="/history"
-              className="text-xs font-mono text-slate-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
+              className="text-xs font-mono text-sand-600 hover:text-forest-900 transition-colors flex items-center gap-1"
             >
               <ArrowLeft className="h-3 w-3" />
               <span>History</span>
             </Link>
-            <span className="text-slate-600">/</span>
-            <span className="text-xs font-mono text-cyan-400">Comparison</span>
+            <span className="text-sand-400">/</span>
+            <span className="text-xs font-mono text-forest-800 font-semibold">Comparison</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-100 flex items-center gap-3">
-            <GitCompare className="h-7 w-7 text-cyber-accent" />
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-forest-950 flex items-center gap-3">
+            <GitCompare className="h-6 w-6 text-forest-800" />
             <span>Side-by-Side Scan Comparison</span>
           </h1>
-          <p className="text-xs text-slate-400 font-mono mt-1">
+          <p className="text-xs text-sand-600 font-mono mt-1">
             Compare privacy transparency metrics, tracker exposures, and score differentials.
           </p>
         </div>
@@ -136,7 +136,7 @@ function CompareContent() {
         <div className="flex flex-col sm:flex-row items-center gap-3">
           {/* Selector A */}
           <div className="w-full sm:w-56">
-            <label className="text-[10px] font-mono text-slate-400 uppercase block mb-1">
+            <label className="text-[10px] font-mono text-sand-600 uppercase block mb-1 font-semibold">
               Baseline Scan (A)
             </label>
             <select
@@ -145,7 +145,7 @@ function CompareContent() {
                 setScanAId(e.target.value);
                 router.push(`/compare?scanA=${e.target.value}&scanB=${scanBId}`);
               }}
-              className="w-full px-3 py-2 rounded-xl text-xs font-mono bg-slate-900 border border-slate-800 focus:border-cyan-500 focus:outline-none text-slate-200"
+              className="w-full px-3 py-2 rounded-xl text-xs font-mono bg-sand-50 border border-sand-300 focus:border-forest-700 focus:outline-none text-forest-950"
             >
               <option value="">Select Baseline...</option>
               {availableScans.map((s) => (
@@ -156,11 +156,11 @@ function CompareContent() {
             </select>
           </div>
 
-          <div className="text-slate-600 font-mono hidden sm:block pt-4">vs</div>
+          <div className="text-sand-400 font-mono hidden sm:block pt-4 font-semibold">vs</div>
 
           {/* Selector B */}
           <div className="w-full sm:w-56">
-            <label className="text-[10px] font-mono text-slate-400 uppercase block mb-1">
+            <label className="text-[10px] font-mono text-sand-600 uppercase block mb-1 font-semibold">
               Comparison Scan (B)
             </label>
             <select
@@ -169,7 +169,7 @@ function CompareContent() {
                 setScanBId(e.target.value);
                 router.push(`/compare?scanA=${scanAId}&scanB=${e.target.value}`);
               }}
-              className="w-full px-3 py-2 rounded-xl text-xs font-mono bg-slate-900 border border-slate-800 focus:border-cyan-500 focus:outline-none text-slate-200"
+              className="w-full px-3 py-2 rounded-xl text-xs font-mono bg-sand-50 border border-sand-300 focus:border-forest-700 focus:outline-none text-forest-950"
             >
               <option value="">Select Target...</option>
               {availableScans.map((s) => (
@@ -184,51 +184,51 @@ function CompareContent() {
 
       {/* Loading State */}
       {loading ? (
-        <div className="min-h-[40vh] flex flex-col items-center justify-center p-8 rounded-2xl bg-cyber-card border border-cyber-border text-center">
-          <Loader2 className="h-8 w-8 text-cyan-400 animate-spin mb-3" />
-          <p className="text-xs font-mono text-slate-400">Computing differential audit telemetry...</p>
+        <div className="min-h-[40vh] flex flex-col items-center justify-center p-8 rounded-2xl bg-white border border-sand-300 text-center">
+          <Loader2 className="h-8 w-8 text-forest-800 animate-spin mb-3" />
+          <p className="text-xs font-mono text-sand-600">Computing differential audit telemetry...</p>
         </div>
       ) : error ? (
-        <div className="p-8 text-center rounded-2xl bg-cyber-card border border-rose-500/40 text-rose-300">
-          <AlertTriangle className="h-8 w-8 text-rose-400 mx-auto mb-2" />
+        <div className="p-8 text-center rounded-2xl bg-white border border-rust-200 text-rust-800">
+          <AlertTriangle className="h-8 w-8 text-rust-700 mx-auto mb-2" />
           <p className="text-sm font-semibold">{error}</p>
         </div>
       ) : !scanA || !scanB ? (
-        <div className="p-12 text-center rounded-2xl bg-cyber-card border border-cyber-border">
-          <GitCompare className="h-10 w-10 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-200">Select Two Audits to Compare</h3>
-          <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
+        <div className="p-12 text-center rounded-2xl bg-white border border-sand-300">
+          <GitCompare className="h-10 w-10 text-sand-400 mx-auto mb-3" />
+          <h3 className="text-base font-bold text-forest-950">Select Two Audits to Compare</h3>
+          <p className="text-xs text-sand-600 mt-1 max-w-md mx-auto">
             Choose a baseline audit and a comparison audit from the dropdowns above or select two entries in the Scan History table.
           </p>
         </div>
       ) : (
         <>
           {/* Differential Metrics Summary Card */}
-          <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl">
-            <h3 className="text-xs font-mono uppercase tracking-wider text-slate-400 mb-4">
+          <div className="p-6 rounded-2xl bg-white border border-sand-300 shadow-sm">
+            <h3 className="text-xs font-mono uppercase tracking-wider text-sand-600 mb-4 font-semibold">
               Differential Audit Summary (Scan B vs Scan A)
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Score Delta */}
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-sand-50 border border-sand-200 flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-mono text-slate-400 uppercase block">
+                  <span className="text-[11px] font-mono text-sand-600 uppercase block font-semibold">
                     Score Difference
                   </span>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span
                       className={`text-2xl font-black ${
                         scoreDiff > 0
-                          ? "text-emerald-400"
+                          ? "text-forest-800"
                           : scoreDiff < 0
-                          ? "text-rose-400"
-                          : "text-slate-300"
+                          ? "text-rust-800"
+                          : "text-forest-950"
                       }`}
                     >
                       {scoreDiff > 0 ? `+${scoreDiff}` : scoreDiff} pts
                     </span>
-                    <span className="text-xs font-mono text-slate-400">
+                    <span className="text-xs font-mono text-sand-600">
                       ({scanA.grade} → {scanB.grade})
                     </span>
                   </div>
@@ -237,10 +237,10 @@ function CompareContent() {
                 <div
                   className={`p-2.5 rounded-xl border ${
                     scoreDiff > 0
-                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                      ? "bg-forest-50 text-forest-800 border-forest-200"
                       : scoreDiff < 0
-                      ? "bg-rose-500/10 text-rose-400 border-rose-500/30"
-                      : "bg-slate-800 text-slate-400 border-slate-700"
+                      ? "bg-rust-50 text-rust-800 border-rust-200"
+                      : "bg-sand-100 text-sand-700 border-sand-200"
                   }`}
                 >
                   {scoreDiff > 0 ? (
@@ -254,59 +254,59 @@ function CompareContent() {
               </div>
 
               {/* Cookies Delta */}
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-sand-50 border border-sand-200 flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-mono text-slate-400 uppercase block">
+                  <span className="text-[11px] font-mono text-sand-600 uppercase block font-semibold">
                     Cookies Change
                   </span>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span
                       className={`text-2xl font-black ${
                         cookiesDiff < 0
-                          ? "text-emerald-400"
+                          ? "text-forest-800"
                           : cookiesDiff > 0
-                          ? "text-rose-400"
-                          : "text-slate-300"
+                          ? "text-amber-800"
+                          : "text-forest-950"
                       }`}
                     >
                       {cookiesDiff > 0 ? `+${cookiesDiff}` : cookiesDiff}
                     </span>
-                    <span className="text-xs font-mono text-slate-400">
+                    <span className="text-xs font-mono text-sand-600">
                       ({reportA?.metrics?.totalCookies || 0} vs {reportB?.metrics?.totalCookies || 0})
                     </span>
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-800 text-cyan-400 border border-slate-700">
+                <div className="p-2.5 rounded-xl bg-sand-100 text-forest-800 border border-sand-200">
                   <Cookie className="h-5 w-5" />
                 </div>
               </div>
 
               {/* Trackers Delta */}
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-sand-50 border border-sand-200 flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-mono text-slate-400 uppercase block">
+                  <span className="text-[11px] font-mono text-sand-600 uppercase block font-semibold">
                     Trackers Change
                   </span>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span
                       className={`text-2xl font-black ${
                         trackersDiff < 0
-                          ? "text-emerald-400"
+                          ? "text-forest-800"
                           : trackersDiff > 0
-                          ? "text-rose-400"
-                          : "text-slate-300"
+                          ? "text-rust-800"
+                          : "text-forest-950"
                       }`}
                     >
                       {trackersDiff > 0 ? `+${trackersDiff}` : trackersDiff}
                     </span>
-                    <span className="text-xs font-mono text-slate-400">
+                    <span className="text-xs font-mono text-sand-600">
                       ({reportA?.metrics?.totalTrackers || 0} vs {reportB?.metrics?.totalTrackers || 0})
                     </span>
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-800 text-orange-400 border border-slate-700">
+                <div className="p-2.5 rounded-xl bg-sand-100 text-rust-800 border border-sand-200">
                   <Radio className="h-5 w-5" />
                 </div>
               </div>
@@ -316,29 +316,29 @@ function CompareContent() {
           {/* Side-by-Side Detailed Profile Columns */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Column A */}
-            <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-cyber-border pb-3">
+            <div className="p-6 rounded-2xl bg-white border border-sand-300 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-sand-200 pb-3">
                 <div>
-                  <span className="text-[10px] font-mono text-cyan-400 uppercase font-bold">
+                  <span className="text-[10px] font-mono text-forest-800 uppercase font-semibold">
                     Scan A (Baseline)
                   </span>
-                  <h4 className="text-lg font-bold text-slate-100">
+                  <h4 className="text-lg font-bold text-forest-950 tracking-tight">
                     {scanA.website?.domain}
                   </h4>
                 </div>
-                <div className="text-right text-xs font-mono text-slate-400">
+                <div className="text-right text-xs font-mono text-sand-600">
                   {formatDate(scanA.createdAt)}
                 </div>
               </div>
 
               {/* Score Pill */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-xs text-slate-400">Transparency Score</span>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-sand-50 border border-sand-200">
+                <span className="text-xs text-sand-600 font-medium">Transparency Score</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-slate-100">
+                  <span className="text-2xl font-bold text-forest-950">
                     {scanA.score}/100
                   </span>
-                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-cyan-400 border border-slate-700">
+                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-white text-forest-800 border border-sand-300">
                     {scanA.grade}
                   </span>
                 </div>
@@ -346,27 +346,27 @@ function CompareContent() {
 
               {/* Metrics */}
               <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Total Cookies:</span>
-                  <span className="font-bold text-slate-200">
+                <div className="p-3 rounded-lg bg-sand-50 border border-sand-200">
+                  <span className="text-sand-600 block text-[11px]">Total Cookies:</span>
+                  <span className="font-bold text-forest-950">
                     {reportA?.metrics?.totalCookies || 0}
                   </span>
                 </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">3rd-Party Cookies:</span>
-                  <span className="font-bold text-orange-400">
+                <div className="p-3 rounded-lg bg-sand-50 border border-sand-200">
+                  <span className="text-sand-600 block text-[11px]">3rd-Party Cookies:</span>
+                  <span className="font-bold text-amber-800">
                     {reportA?.metrics?.thirdPartyCookies || 0}
                   </span>
                 </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Total Trackers:</span>
-                  <span className="font-bold text-rose-400">
+                <div className="p-3 rounded-lg bg-sand-50 border border-sand-200">
+                  <span className="text-sand-600 block text-[11px]">Total Trackers:</span>
+                  <span className="font-bold text-rust-800">
                     {reportA?.metrics?.totalTrackers || 0}
                   </span>
                 </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Network Requests:</span>
-                  <span className="font-bold text-slate-200">
+                <div className="p-3 rounded-lg bg-sand-50 border border-sand-200">
+                  <span className="text-sand-600 block text-[11px]">Network Requests:</span>
+                  <span className="font-bold text-forest-950">
                     {reportA?.metrics?.thirdPartyRequests || 0}
                   </span>
                 </div>
@@ -374,17 +374,17 @@ function CompareContent() {
 
               {/* Findings */}
               <div>
-                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider block mb-2">
+                <span className="text-xs font-mono text-sand-600 uppercase tracking-wider block mb-2 font-semibold">
                   Findings ({findingsA.length})
                 </span>
                 <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                   {findingsA.map((f) => (
                     <div
                       key={f.id}
-                      className="p-2.5 rounded-lg bg-slate-900/30 border border-slate-800 text-xs font-mono flex items-center justify-between"
+                      className="p-2.5 rounded-lg bg-sand-50 border border-sand-200 text-xs font-mono flex items-center justify-between"
                     >
-                      <span className="text-slate-300 truncate pr-2">{f.title}</span>
-                      <span className="text-rose-400 font-bold shrink-0">
+                      <span className="text-forest-900 truncate pr-2">{f.title}</span>
+                      <span className="text-rust-800 font-bold shrink-0">
                         -{f.scoreDeduction} pts
                       </span>
                     </div>
@@ -394,29 +394,29 @@ function CompareContent() {
             </div>
 
             {/* Column B */}
-            <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-cyber-border pb-3">
+            <div className="p-6 rounded-2xl bg-white border border-sand-300 shadow-sm space-y-4">
+              <div className="flex items-center justify-between border-b border-sand-200 pb-3">
                 <div>
-                  <span className="text-[10px] font-mono text-emerald-400 uppercase font-bold">
+                  <span className="text-[10px] font-mono text-forest-800 uppercase font-semibold">
                     Scan B (Comparison)
                   </span>
-                  <h4 className="text-lg font-bold text-slate-100">
+                  <h4 className="text-lg font-bold text-forest-950 tracking-tight">
                     {scanB.website?.domain}
                   </h4>
                 </div>
-                <div className="text-right text-xs font-mono text-slate-400">
+                <div className="text-right text-xs font-mono text-sand-600">
                   {formatDate(scanB.createdAt)}
                 </div>
               </div>
 
               {/* Score Pill */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-xs text-slate-400">Transparency Score</span>
+              <div className="flex items-center justify-between p-4 rounded-xl bg-sand-50 border border-sand-200">
+                <span className="text-xs text-sand-600 font-medium">Transparency Score</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-slate-100">
+                  <span className="text-2xl font-bold text-forest-950">
                     {scanB.score}/100
                   </span>
-                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-cyan-400 border border-slate-700">
+                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-white text-forest-800 border border-sand-300">
                     {scanB.grade}
                   </span>
                 </div>
@@ -424,27 +424,27 @@ function CompareContent() {
 
               {/* Metrics */}
               <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Total Cookies:</span>
-                  <span className="font-bold text-slate-200">
+                <div className="p-3 rounded-lg bg-sand-50 border border-sand-200">
+                  <span className="text-sand-600 block text-[11px]">Total Cookies:</span>
+                  <span className="font-bold text-forest-950">
                     {reportB?.metrics?.totalCookies || 0}
                   </span>
                 </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">3rd-Party Cookies:</span>
-                  <span className="font-bold text-orange-400">
+                <div className="p-3 rounded-lg bg-sand-50 border border-sand-200">
+                  <span className="text-sand-600 block text-[11px]">3rd-Party Cookies:</span>
+                  <span className="font-bold text-amber-800">
                     {reportB?.metrics?.thirdPartyCookies || 0}
                   </span>
                 </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Total Trackers:</span>
-                  <span className="font-bold text-rose-400">
+                <div className="p-3 rounded-lg bg-sand-50 border border-sand-200">
+                  <span className="text-sand-600 block text-[11px]">Total Trackers:</span>
+                  <span className="font-bold text-rust-800">
                     {reportB?.metrics?.totalTrackers || 0}
                   </span>
                 </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Network Requests:</span>
-                  <span className="font-bold text-slate-200">
+                <div className="p-3 rounded-lg bg-sand-50 border border-sand-200">
+                  <span className="text-sand-600 block text-[11px]">Network Requests:</span>
+                  <span className="font-bold text-forest-950">
                     {reportB?.metrics?.thirdPartyRequests || 0}
                   </span>
                 </div>
@@ -452,17 +452,17 @@ function CompareContent() {
 
               {/* Findings */}
               <div>
-                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider block mb-2">
+                <span className="text-xs font-mono text-sand-600 uppercase tracking-wider block mb-2 font-semibold">
                   Findings ({findingsB.length})
                 </span>
                 <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                   {findingsB.map((f) => (
                     <div
                       key={f.id}
-                      className="p-2.5 rounded-lg bg-slate-900/30 border border-slate-800 text-xs font-mono flex items-center justify-between"
+                      className="p-2.5 rounded-lg bg-sand-50 border border-sand-200 text-xs font-mono flex items-center justify-between"
                     >
-                      <span className="text-slate-300 truncate pr-2">{f.title}</span>
-                      <span className="text-rose-400 font-bold shrink-0">
+                      <span className="text-forest-900 truncate pr-2">{f.title}</span>
+                      <span className="text-rust-800 font-bold shrink-0">
                         -{f.scoreDeduction} pts
                       </span>
                     </div>
@@ -482,8 +482,8 @@ export default function ComparePage() {
     <Suspense
       fallback={
         <div className="min-h-[40vh] flex flex-col items-center justify-center p-8 text-center">
-          <Loader2 className="h-8 w-8 text-cyan-400 animate-spin mb-3" />
-          <p className="text-xs font-mono text-slate-400">Loading comparison module...</p>
+          <Loader2 className="h-8 w-8 text-forest-800 animate-spin mb-3" />
+          <p className="text-xs font-mono text-sand-600">Loading comparison module...</p>
         </div>
       }
     >
