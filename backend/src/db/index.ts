@@ -4,10 +4,20 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { env } from "../config/env.js";
 import * as schema from "./schema.js";
 
-// Determine SSL requirement (cloud PostgreSQL like Neon/Render/Supabase requires SSL)
+// Determine SSL requirement:
+// Cloud PostgreSQL (Render, Neon, Supabase) requires SSL.
+// Local development (localhost, 127.0.0.1) does not use SSL.
+const isLocalhost =
+  env.DATABASE_URL.includes("localhost") ||
+  env.DATABASE_URL.includes("127.0.0.1") ||
+  env.DATABASE_URL.includes("0.0.0.0");
+
+const isExplicitlyDisabled = env.DATABASE_URL.includes("sslmode=disable");
+
 const requiresSsl =
-  env.DATABASE_URL.includes("sslmode=require") ||
-  (env.NODE_ENV === "production" && !env.DATABASE_URL.includes("localhost"));
+  !isExplicitlyDisabled &&
+  (env.DATABASE_URL.includes("sslmode=require") ||
+    (env.NODE_ENV === "production" && !isLocalhost));
 
 export const pool = new Pool({
   connectionString: env.DATABASE_URL,
