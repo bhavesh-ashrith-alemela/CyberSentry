@@ -32,20 +32,28 @@ export function Footer() {
               <span>Regulatory Disclaimer</span>
             </div>
             <p className="text-forest-600 leading-relaxed text-xs">
-              The CyberSentry Privacy Transparency Score is an automated engineering heuristic. It does NOT constitute legal advice, GDPR/ePrivacy legal certification, or formal compliance audit.
+              CyberSentry provides automated privacy indicators based on observable website behaviour. It does not provide legal compliance certification.
             </p>
           </div>
         </div>
 
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-forest-500 font-mono">
-          <p>© {new Date().getFullYear()} CyberSentry Platform. Empirical Web Privacy Research.</p>
-          <div className="flex items-center gap-4">
-            <Link href="/" className="hover:text-forest-900 transition-colors">
-              New Audit
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-forest-500 font-mono">
+          <p>© {new Date().getFullYear()} CyberSentry. Deterministic Web Privacy Transparency.</p>
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4">
+            <Link href="/#product" className="hover:text-forest-900 transition-colors">
+              Product
+            </Link>
+            <span>•</span>
+            <Link href="/#how-it-works" className="hover:text-forest-900 transition-colors">
+              How It Works
+            </Link>
+            <span>•</span>
+            <Link href="/#sample-report" className="hover:text-forest-900 transition-colors">
+              Privacy Insights
             </Link>
             <span>•</span>
             <Link href="/history" className="hover:text-forest-900 transition-colors">
-              Audit History
+              Scan History
             </Link>
             <span>•</span>
             <Link href="/compare" className="hover:text-forest-900 transition-colors">

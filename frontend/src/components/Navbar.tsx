@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Shield, Activity, History, GitCompare } from "lucide-react";
+import { Shield } from "lucide-react";
 import { api } from "@/lib/api";
 
 export function Navbar() {
@@ -29,10 +29,22 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: "/", label: "New Audit", icon: Activity },
-    { href: "/history", label: "Audit History", icon: History },
-    { href: "/compare", label: "Comparison", icon: GitCompare },
+    { href: "/#product", label: "Product" },
+    { href: "/#how-it-works", label: "How It Works" },
+    { href: "/#sample-report", label: "Privacy Insights" },
+    { href: "/history", label: "Scan History" },
   ];
+
+  const handleScanClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (pathname === "/") {
+      e.preventDefault();
+      const input = document.getElementById("scan-input");
+      if (input) {
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+        (input.querySelector("input") || input)?.focus();
+      }
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-sand-300 bg-sand-50/90 backdrop-blur-md">
@@ -58,63 +70,70 @@ export function Navbar() {
         </Link>
 
         {/* Navigation Links */}
-        <nav className="flex items-center gap-1 sm:gap-2">
+        <nav className="hidden md:flex items-center gap-1 sm:gap-2">
           {navLinks.map((item) => {
-            const Icon = item.icon;
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                title={item.label}
-                aria-label={item.label}
-                className={`flex items-center gap-2 px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   isActive
                     ? "bg-sand-200 text-forest-950 border border-sand-400 font-semibold shadow-subtle"
                     : "text-forest-700 hover:text-forest-950 hover:bg-sand-100"
                 }`}
               >
-                <Icon className="h-4 w-4 shrink-0" />
                 <span className="hidden sm:inline">{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* Backend Connectivity Status */}
-        <div className="hidden md:flex items-center gap-2 text-xs font-mono">
-          <div
-            className={`flex items-center gap-2 px-3 py-1 rounded-full border text-xs ${
-              backendOnline === true
-                ? "bg-forest-50 text-forest-800 border-forest-200"
-                : backendOnline === false
-                ? "bg-rust-50 text-rust-800 border-rust-200"
-                : "bg-sand-100 text-forest-500 border-sand-300"
-            }`}
-            title={
-              backendOnline === true
-                ? "Backend API & PostgreSQL Connected"
-                : backendOnline === false
-                ? "Backend API Disconnected"
-                : "Checking Backend Connectivity..."
-            }
+        {/* Right Side: Scan a Website Button & Backend Status */}
+        <div className="flex items-center gap-3">
+          <Link
+            href="/#scan-input"
+            onClick={handleScanClick}
+            className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-semibold text-sand-50 bg-forest-800 hover:bg-forest-900 active:bg-forest-950 transition-all shadow-subtle"
           >
-            <span
-              className={`h-1.5 w-1.5 rounded-full ${
+            <span>Scan a Website</span>
+          </Link>
+
+          {/* Operational Pill */}
+          <div className="hidden lg:flex items-center gap-2 text-xs font-mono">
+            <div
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] ${
                 backendOnline === true
-                  ? "bg-forest-600"
+                  ? "bg-forest-50 text-forest-800 border-forest-200"
                   : backendOnline === false
-                  ? "bg-rust-600"
-                  : "bg-sand-400"
+                  ? "bg-rust-50 text-rust-800 border-rust-200"
+                  : "bg-sand-100 text-forest-500 border-sand-300"
               }`}
-            />
-            <span>
-              {backendOnline === true
-                ? "API Operational"
-                : backendOnline === false
-                ? "API Offline"
-                : "Checking..."}
-            </span>
+              title={
+                backendOnline === true
+                  ? "Backend API & PostgreSQL Connected"
+                  : backendOnline === false
+                  ? "Backend API Disconnected"
+                  : "Checking Backend Connectivity..."
+              }
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  backendOnline === true
+                    ? "bg-forest-600"
+                    : backendOnline === false
+                    ? "bg-rust-600"
+                    : "bg-sand-400"
+                }`}
+              />
+              <span>
+                {backendOnline === true
+                  ? "Engine Ready"
+                  : backendOnline === false
+                  ? "Offline"
+                  : "Checking..."}
+              </span>
+            </div>
           </div>
         </div>
       </div>
