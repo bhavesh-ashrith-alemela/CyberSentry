@@ -160,6 +160,64 @@ export function TrackerChart({ requests }: TrackerChartProps) {
           </div>
         ))}
       </div>
+
+      {/* Itemized Tracker Domain Inventory Table */}
+      {data.length > 0 && (
+        <div className="mt-6 pt-5 border-t border-sand-200">
+          <h4 className="text-xs font-mono uppercase tracking-wider text-forest-700 font-semibold mb-3">
+            Identified Tracker Entities & Domain Directory
+          </h4>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono">
+              <thead>
+                <tr className="border-b border-sand-200 text-forest-500 uppercase text-[10px]">
+                  <th className="pb-2 font-semibold">Domain</th>
+                  <th className="pb-2 font-semibold">Entity / Owner</th>
+                  <th className="pb-2 font-semibold">Category</th>
+                  <th className="pb-2 font-semibold text-right">Requests</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-sand-200">
+                {data.map((item) => {
+                  let owner = "Independent / Third-Party";
+                  if (/google|doubleclick|youtube|gstatic/i.test(item.domain)) owner = "Google LLC";
+                  else if (/facebook|instagram|fbcdn/i.test(item.domain)) owner = "Meta Platforms";
+                  else if (/amazon|a2z/i.test(item.domain)) owner = "Amazon.com Inc";
+                  else if (/microsoft|bing|adnxs/i.test(item.domain)) owner = "Microsoft Corporation";
+                  else if (/criteo/i.test(item.domain)) owner = "Criteo SA";
+                  else if (/hotjar/i.test(item.domain)) owner = "Hotjar Ltd";
+                  else if (/cloudflare/i.test(item.domain)) owner = "Cloudflare Inc";
+                  else if (/twitter|t\.co/i.test(item.domain)) owner = "X Corp (Twitter)";
+
+                  return (
+                    <tr key={item.domain} className="hover:bg-sand-50/70 transition-colors">
+                      <td className="py-2.5 font-bold text-forest-950 max-w-[180px] truncate">
+                        {item.domain}
+                      </td>
+                      <td className="py-2.5 text-forest-700">{owner}</td>
+                      <td className="py-2.5">
+                        <span
+                          className="px-2 py-0.5 rounded text-[10px] font-bold border"
+                          style={{
+                            color: item.fill,
+                            borderColor: `${item.fill}40`,
+                            backgroundColor: `${item.fill}10`,
+                          }}
+                        >
+                          {item.category}
+                        </span>
+                      </td>
+                      <td className="py-2.5 text-right font-bold text-forest-900">
+                        {item.calls}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -17,6 +17,8 @@ import {
   ArrowLeft,
   Loader2,
   CheckCircle2,
+  Check,
+  Info,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Scan, Report, Finding, ScanComparison } from "@/lib/types";
@@ -105,6 +107,12 @@ function CompareContent() {
 
   const cookiesDiff = (reportB?.metrics?.totalCookies || 0) - (reportA?.metrics?.totalCookies || 0);
   const trackersDiff = (reportB?.metrics?.totalTrackers || 0) - (reportA?.metrics?.totalTrackers || 0);
+
+  const ruleIdsA = new Set(findingsA.map((f) => f.ruleId));
+  const ruleIdsB = new Set(findingsB.map((f) => f.ruleId));
+
+  const newFindingsInB = findingsB.filter((f) => !ruleIdsA.has(f.ruleId));
+  const resolvedFindingsInB = findingsA.filter((f) => !ruleIdsB.has(f.ruleId));
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
@@ -309,6 +317,85 @@ function CompareContent() {
                 <div className="p-2.5 rounded-xl bg-sand-100 text-rust-800 border border-sand-200">
                   <Radio className="h-5 w-5" />
                 </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Contextual Guidance Callout */}
+          <div className="p-4 sm:p-5 rounded-2xl bg-sand-100 border border-sand-300 text-xs font-mono flex items-start gap-3.5 shadow-subtle">
+            <Info className="h-5 w-5 text-forest-800 shrink-0 mt-0.5" />
+            <div className="text-forest-800 font-sans text-xs sm:text-sm leading-relaxed">
+              <span className="font-bold text-forest-950 block mb-0.5 font-mono text-xs uppercase tracking-wide">
+                Contextual Evaluation Guidance
+              </span>
+              A score differential reflects observable shifts in detected cookies, network telemetry, or consent dark patterns between audits. A score change does not necessarily mean a website became safer or less safe in absolute terms without considering the underlying technical evidence and context.
+            </div>
+          </div>
+
+          {/* Differential Findings Delta Card */}
+          <div className="p-6 rounded-2xl bg-white border border-sand-300 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-sand-200 pb-3">
+              <h3 className="text-xs font-mono uppercase tracking-wider text-forest-700 font-semibold">
+                Findings Differential (Added vs. Resolved)
+              </h3>
+              <span className="text-[11px] font-mono text-sand-600">
+                {newFindingsInB.length} new • {resolvedFindingsInB.length} resolved
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* New Findings in Scan B */}
+              <div className="p-4 rounded-xl bg-sand-50 border border-sand-200 space-y-2">
+                <span className="text-xs font-mono font-semibold text-rust-800 flex items-center gap-1.5">
+                  <AlertTriangle className="h-4 w-4 text-rust-700" />
+                  <span>New Observations in Scan B ({newFindingsInB.length})</span>
+                </span>
+                {newFindingsInB.length === 0 ? (
+                  <p className="text-xs text-forest-600 font-mono py-2">
+                    No new violations triggered in Scan B.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {newFindingsInB.map((f) => (
+                      <div
+                        key={`new-${f.id}`}
+                        className="p-2.5 rounded-lg bg-white border border-rust-200 text-xs font-mono flex items-center justify-between"
+                      >
+                        <span className="text-forest-950 truncate pr-2">{f.title}</span>
+                        <span className="text-rust-800 font-bold shrink-0">
+                          -{f.scoreDeduction} pts
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Resolved / Absent Findings in Scan B */}
+              <div className="p-4 rounded-xl bg-sand-50 border border-sand-200 space-y-2">
+                <span className="text-xs font-mono font-semibold text-forest-800 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-forest-700" />
+                  <span>Resolved / Absent in Scan B ({resolvedFindingsInB.length})</span>
+                </span>
+                {resolvedFindingsInB.length === 0 ? (
+                  <p className="text-xs text-forest-600 font-mono py-2">
+                    No previously observed violations were resolved.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    {resolvedFindingsInB.map((f) => (
+                      <div
+                        key={`resolved-${f.id}`}
+                        className="p-2.5 rounded-lg bg-white border border-forest-200 text-xs font-mono flex items-center justify-between"
+                      >
+                        <span className="text-forest-950 truncate pr-2">{f.title}</span>
+                        <span className="text-forest-800 font-bold shrink-0">
+                          +{f.scoreDeduction} pts resolved
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

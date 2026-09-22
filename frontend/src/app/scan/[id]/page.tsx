@@ -11,6 +11,8 @@ import {
   CheckCircle2,
   ExternalLink,
   FileText,
+  Download,
+  Printer,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import {
@@ -29,6 +31,7 @@ import { FindingsList } from "@/components/FindingsList";
 import { TrackerChart } from "@/components/TrackerChart";
 import { CookieTable } from "@/components/CookieTable";
 import { StatusStepper } from "@/components/StatusStepper";
+import { EducationalGuidance } from "@/components/EducationalGuidance";
 
 export default function ScanReportPage() {
   const params = useParams();
@@ -127,6 +130,34 @@ export default function ScanReportPage() {
     }
   };
 
+  const handleExportJson = () => {
+    if (!scan) return;
+    const exportData = {
+      scan,
+      report,
+      cookies,
+      trackers,
+      findings,
+      banner,
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `cybersentry-audit-${scan.website?.domain || scanId}-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   if (loading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
@@ -177,7 +208,7 @@ export default function ScanReportPage() {
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-sand-300 shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-sand-300 shadow-sm print:hidden">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Link
@@ -211,8 +242,12 @@ export default function ScanReportPage() {
           </p>
         </div>
 
-        {/* Metadata Badges */}
+        {/* Metadata Badges & Export Actions */}
         <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+          <div className="px-2.5 py-1.5 rounded-lg bg-forest-50 border border-forest-200 text-forest-800 font-bold uppercase tracking-wider text-[10px]">
+            Status: Completed
+          </div>
+
           <div className="px-3 py-1.5 rounded-lg bg-sand-100 border border-sand-200 text-forest-800 flex items-center gap-1.5 font-medium">
             <Clock className="h-3.5 w-3.5 text-sand-500" />
             <span>{formatDate(scan.createdAt)}</span>
@@ -227,10 +262,29 @@ export default function ScanReportPage() {
 
           <button
             onClick={handleRetry}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sand-100 text-forest-900 border border-sand-300 hover:bg-sand-200 transition-colors font-medium"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sand-100 text-forest-900 border border-sand-300 hover:bg-sand-200 transition-colors font-medium cursor-pointer"
+            title="Re-run audit on this target"
           >
             <RotateCw className="h-3.5 w-3.5" />
             <span>Re-Audit</span>
+          </button>
+
+          <button
+            onClick={handleExportJson}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sand-100 text-forest-900 border border-sand-300 hover:bg-sand-200 transition-colors font-medium cursor-pointer"
+            title="Download audit report as JSON"
+          >
+            <Download className="h-3.5 w-3.5 text-forest-700" />
+            <span>Export JSON</span>
+          </button>
+
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sand-100 text-forest-900 border border-sand-300 hover:bg-sand-200 transition-colors font-medium cursor-pointer"
+            title="Print or save as PDF"
+          >
+            <Printer className="h-3.5 w-3.5 text-forest-700" />
+            <span>Print</span>
           </button>
         </div>
       </div>
@@ -362,6 +416,9 @@ export default function ScanReportPage() {
 
       {/* Stored Cookie Ledger Table */}
       <CookieTable cookies={cookies} />
+
+      {/* Educational Guidance Glossary */}
+      <EducationalGuidance />
     </div>
   );
 }
