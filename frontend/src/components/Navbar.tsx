@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Shield } from "lucide-react";
+import { Shield, Menu, X } from "lucide-react";
 import { api } from "@/lib/api";
 
 export function Navbar() {
   const pathname = usePathname();
   const [backendOnline, setBackendOnline] = useState<boolean | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -28,6 +29,10 @@ export function Navbar() {
     };
   }, []);
 
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
+
   const navLinks = [
     { href: "/#product", label: "Product" },
     { href: "/#how-it-works", label: "How It Works" },
@@ -36,6 +41,7 @@ export function Navbar() {
   ];
 
   const handleScanClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    setMobileMenuOpen(false);
     if (pathname === "/") {
       e.preventDefault();
       const input = document.getElementById("scan-input");
@@ -47,7 +53,7 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-sand-300 bg-sand-50/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-sand-300 bg-sand-50/90 backdrop-blur-md print:hidden">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-3 group">
@@ -89,8 +95,8 @@ export function Navbar() {
           })}
         </nav>
 
-        {/* Right Side: Scan a Website Button & Backend Status */}
-        <div className="flex items-center gap-3">
+        {/* Right Side: Scan a Website Button, Status Pill, and Mobile Menu Toggle */}
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link
             href="/#scan-input"
             onClick={handleScanClick}
@@ -135,8 +141,41 @@ export function Navbar() {
               </span>
             </div>
           </div>
+
+          {/* Mobile Menu Hamburger Button */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label={mobileMenuOpen ? "Close menu" : "Open navigation menu"}
+            className="md:hidden p-2 rounded-lg text-forest-700 hover:text-forest-950 hover:bg-sand-200 transition-colors border border-sand-300"
+          >
+            {mobileMenuOpen ? <X className="h-4.5 w-4.5" /> : <Menu className="h-4.5 w-4.5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Navigation Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-sand-300 bg-sand-50/95 px-4 py-3 space-y-1 shadow-sm font-mono text-xs">
+          {navLinks.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-forest-800 hover:bg-sand-200 hover:text-forest-950 transition-colors"
+            >
+              {item.label}
+            </Link>
+          ))}
+          <Link
+            href="/compare"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-lg text-forest-800 hover:bg-sand-200 hover:text-forest-950 transition-colors"
+          >
+            Scan Comparison
+          </Link>
+        </div>
+      )}
     </header>
   );
 }

@@ -164,7 +164,7 @@ function CompareContent() {
             </select>
           </div>
 
-          <div className="text-sand-400 font-mono hidden sm:block pt-4 font-semibold">vs</div>
+          <div className="text-sand-500 font-mono text-xs font-semibold sm:pt-4">vs</div>
 
           {/* Selector B */}
           <div className="w-full sm:w-56">

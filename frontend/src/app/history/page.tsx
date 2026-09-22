@@ -164,6 +164,9 @@ export default function ScanHistoryPage() {
         </div>
       ) : (
         <div className="rounded-2xl bg-white border border-sand-300 overflow-hidden shadow-sm">
+          <div className="sm:hidden px-4 pt-3 pb-1 text-[10px] font-mono text-sand-500 flex items-center justify-end">
+            <span>← Swipe horizontally to view full metrics →</span>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
               <thead>

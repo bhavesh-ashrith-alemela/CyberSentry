@@ -112,6 +112,9 @@ export function TrackerChart({ requests }: TrackerChartProps) {
                 fontFamily="monospace"
                 tickLine={false}
                 width={80}
+                tickFormatter={(val: string) =>
+                  val.length > 13 ? `${val.slice(0, 11)}..` : val
+                }
               />
               <Tooltip
                 content={({ active, payload }) => {

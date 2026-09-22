@@ -101,7 +101,16 @@ export function FindingsList({ findings }: FindingsListProps) {
               >
                 {/* Header Row */}
                 <div
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={isExpanded}
                   onClick={() => toggleExpand(finding.id)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      toggleExpand(finding.id);
+                    }
+                  }}
                   className="p-4 flex items-center justify-between gap-4 cursor-pointer select-none"
                 >
                   <div className="flex items-start gap-3 flex-1 min-w-0">

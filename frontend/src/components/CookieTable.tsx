@@ -92,8 +92,12 @@ export function CookieTable({ cookies }: CookieTableProps) {
           No cookies match your filter criteria.
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-mono">
+        <div>
+          <div className="sm:hidden text-[10px] font-mono text-sand-500 mb-2 flex items-center justify-end gap-1">
+            <span>← Swipe horizontally to view security flags →</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono">
             <thead>
               <tr className="border-b border-sand-300 text-forest-500 uppercase tracking-wider text-[10px]">
                 <th className="pb-3 font-semibold">Cookie Name</th>
@@ -200,6 +204,7 @@ export function CookieTable({ cookies }: CookieTableProps) {
             </tbody>
           </table>
         </div>
+      </div>
       )}
     </div>
   );

@@ -50,3 +50,53 @@ body {
   border-radius: 1rem;
   box-shadow: 0 1px 3px rgba(22, 32, 27, 0.04);
 }
+
+/* Universal Keyboard Focus Indicator (WCAG 2.1 AA / AAA compliant) */
+*:focus-visible {
+  outline: 2px solid #28553E !important;
+  outline-offset: 2px !important;
+}
+
+/* Reduced Motion Preference Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Print Stylesheet for PDF & Paper Reports */
+@media print {
+  header,
+  footer,
+  .print-hidden,
+  button,
+  input,
+  select {
+    display: none !important;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #16201B !important;
+    font-size: 11pt;
+  }
+
+  .shadow-card,
+  .shadow-subtle,
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg {
+    box-shadow: none !important;
+  }
+
+  .rounded-2xl,
+  .rounded-3xl {
+    border-radius: 8px !important;
+  }
+}
+
