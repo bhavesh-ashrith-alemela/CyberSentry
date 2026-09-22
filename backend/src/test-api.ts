@@ -104,18 +104,37 @@ async function runTests() {
     }
 
     const createdScanId = scanPostJson.data.scan.id;
-    console.log(`  ✓ Scan completed with ID: ${createdScanId}`);
-    console.log(`    Score: ${scanPostJson.data.scan.score}/100, Grade: ${scanPostJson.data.scan.grade}`);
-    console.log(`    Status: ${scanPostJson.data.scan.status}`);
+    console.log(`  ✓ Scan job initiated with ID: ${createdScanId}`);
+    console.log(`    Initial Status: ${scanPostJson.data.scan.status}`);
 
-    // 3.5 GET /api/scans/:id
-    console.log(`\n  Testing GET /api/scans/${createdScanId} ...`);
-    const getScanRes = await fetch(`${baseUrl}/api/scans/${createdScanId}`);
-    const getScanJson = await getScanRes.json();
-    if (getScanRes.status !== 200 || getScanJson.data?.id !== createdScanId) {
-      throw new Error("Failed to fetch scan by ID");
+    // 3.5 Poll GET /api/scans/:id until completed (mirroring frontend integration)
+    console.log(`\n  Testing live polling of GET /api/scans/${createdScanId} ...`);
+    let scanCompleted = false;
+    let attempts = 0;
+    const maxAttempts = 30;
+    let latestScanData: any = null;
+
+    while (!scanCompleted && attempts < maxAttempts) {
+      await new Promise((r) => setTimeout(r, 1000));
+      attempts++;
+      const pollRes = await fetch(`${baseUrl}/api/scans/${createdScanId}`);
+      const pollJson = await pollRes.json();
+      latestScanData = pollJson.data;
+
+      console.log(`    [Poll #${attempts}] Status: ${latestScanData?.status}`);
+
+      if (latestScanData?.status === "completed") {
+        scanCompleted = true;
+        console.log(`  ✓ Scan completed! Score: ${latestScanData.score}/100, Grade: ${latestScanData.grade}`);
+      } else if (latestScanData?.status === "failed") {
+        throw new Error(`Scan failed during crawl: ${latestScanData.errorMessage}`);
+      }
     }
-    console.log("  ✓ GET /api/scans/:id passed (200 OK)");
+
+    if (!scanCompleted) {
+      throw new Error(`Scan polling timed out after ${maxAttempts}s`);
+    }
+    console.log("  ✓ GET /api/scans/:id polling passed (200 OK)");
 
     // 3.6 GET /api/scans/:id/report
     console.log(`\n  Testing GET /api/scans/${createdScanId}/report ...`);

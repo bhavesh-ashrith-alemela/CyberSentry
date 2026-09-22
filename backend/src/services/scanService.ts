@@ -7,9 +7,9 @@ import { analyzeScan } from "../analyzer/scorer.js";
 
 export class ScanService {
   /**
-   * Validates URL, creates scan record, executes crawler & deterministic analysis, and saves results
+   * Validates URL and creates initial scan record in 'pending' state
    */
-  async executeScan(rawUrl: string) {
+  async createScanJob(rawUrl: string) {
     // 1. SSRF Safety Validation
     const safetyCheck = await validateUrlSafety(rawUrl);
     if (!safetyCheck.safe) {
@@ -25,31 +25,49 @@ export class ScanService {
 
     // 3. Create Scan Entity in 'pending' state
     const scan = await scanRepository.createScan(website.id);
+    const scanWithWebsite = await scanRepository.getScanWithWebsite(scan.id);
 
+    return {
+      scan: scanWithWebsite || scan,
+      normalizedUrl,
+      hostname,
+      websiteId: website.id,
+    };
+  }
+
+  /**
+   * Background runner that crawls website, executes deterministic scoring, and stores results in DB
+   */
+  async processScanJob(
+    scanId: string,
+    normalizedUrl: string,
+    hostname: string,
+    websiteId: string
+  ) {
     try {
-      // 4. Update status to 'scanning'
-      await scanRepository.updateScanStatus(scan.id, "scanning");
+      // 1. Update status to 'scanning'
+      await scanRepository.updateScanStatus(scanId, "scanning");
 
-      // 5. Execute Playwright Headless Scanner
+      // 2. Execute Playwright Headless Scanner
       const scanPayload = await runScan(normalizedUrl);
 
-      // 6. Update status to 'analyzing'
-      await scanRepository.updateScanStatus(scan.id, "analyzing");
+      // 3. Update status to 'analyzing'
+      await scanRepository.updateScanStatus(scanId, "analyzing");
 
-      // 7. Execute Deterministic Privacy Scoring
+      // 4. Execute Deterministic Privacy Scoring
       const analysis = analyzeScan(scanPayload);
 
-      // 8. Build Knowledge Base Domain-to-Tracker ID mapping
+      // 5. Build Knowledge Base Domain-to-Tracker ID mapping
       const allKnownTrackers = await trackerRepository.getAllTrackers();
       const domainToTrackerIdMap = new Map<string, string>();
       for (const t of allKnownTrackers) {
         domainToTrackerIdMap.set(t.domain.toLowerCase(), t.id);
       }
 
-      // 9. Save full scan audit trail inside a PostgreSQL transaction
+      // 6. Save full scan audit trail inside a PostgreSQL transaction
       await scanRepository.saveScanFullResults({
-        scanId: scan.id,
-        websiteId: website.id,
+        scanId,
+        websiteId,
         targetDomain: hostname,
         metadata: scanPayload.metadata,
         analysis,
@@ -60,31 +78,64 @@ export class ScanService {
         domainToTrackerIdMap,
       });
 
-      // 10. Fetch freshly committed report
-      const updatedScan = await scanRepository.getScanWithWebsite(scan.id);
-      const report = await scanRepository.getReport(scan.id);
-
-      return {
-        scan: updatedScan,
-        report,
-        summary: {
-          score: analysis.score,
-          grade: analysis.grade,
-          bannerDetected: scanPayload.bannerDetected,
-          bannerCmpName: scanPayload.bannerCmpName,
-          totalCookies: analysis.totalCookies,
-          thirdPartyCookies: analysis.thirdPartyCookies,
-          totalTrackers: analysis.totalTrackers,
-          thirdPartyRequests: analysis.thirdPartyRequests,
-        },
-      };
+      console.log(`[ScanService] Scan ${scanId} completed successfully.`);
+      return { scanPayload, analysis };
     } catch (scanError: any) {
-      console.error(`[ScanService] Scan ${scan.id} failed:`, scanError.message);
-      await scanRepository.updateScanStatus(scan.id, "failed", {
+      console.error(`[ScanService] Scan ${scanId} failed:`, scanError.message);
+      await scanRepository.updateScanStatus(scanId, "failed", {
         errorMessage: scanError.message || "Unknown error during website crawl.",
       });
       throw scanError;
     }
+  }
+
+  /**
+   * Asynchronous scan launcher: creates pending scan record, starts background crawl, returns pending scan immediately
+   */
+  async startScan(rawUrl: string) {
+    const job = await this.createScanJob(rawUrl);
+
+    // Launch crawler & analysis in background without awaiting
+    this.processScanJob(job.scan.id, job.normalizedUrl, job.hostname, job.websiteId).catch(
+      (err) => {
+        console.error(`[ScanService] Background scan failure for ${job.scan.id}:`, err.message);
+      }
+    );
+
+    return {
+      scan: job.scan,
+    };
+  }
+
+  /**
+   * Synchronous scan execution: awaits full crawl and returns report
+   */
+  async executeScan(rawUrl: string) {
+    const job = await this.createScanJob(rawUrl);
+    const { scanPayload, analysis } = await this.processScanJob(
+      job.scan.id,
+      job.normalizedUrl,
+      job.hostname,
+      job.websiteId
+    );
+
+    const updatedScan = await scanRepository.getScanWithWebsite(job.scan.id);
+    const report = await this.getScanReport(job.scan.id);
+
+    return {
+      scan: updatedScan,
+      report,
+      summary: {
+        score: analysis.score,
+        grade: analysis.grade,
+        bannerDetected: scanPayload.bannerDetected,
+        bannerCmpName: scanPayload.bannerCmpName,
+        totalCookies: analysis.totalCookies,
+        thirdPartyCookies: analysis.thirdPartyCookies,
+        totalTrackers: analysis.totalTrackers,
+        thirdPartyRequests: analysis.thirdPartyRequests,
+      },
+    };
   }
 
   async getScanById(id: string) {
@@ -99,13 +150,21 @@ export class ScanService {
 
   async getScanReport(scanId: string) {
     await this.getScanById(scanId); // ensure exists
-    const report = await scanRepository.getReport(scanId);
+    const [report, banner] = await Promise.all([
+      scanRepository.getReport(scanId),
+      scanRepository.getConsentBanner(scanId),
+    ]);
+
     if (!report) {
       const err = new Error("Report not yet generated or scan did not complete.");
       (err as any).statusCode = 404;
       throw err;
     }
-    return report;
+
+    return {
+      ...report,
+      consentBanner: banner,
+    };
   }
 
   async getScanCookies(scanId: string) {
@@ -115,7 +174,15 @@ export class ScanService {
 
   async getScanTrackers(scanId: string) {
     await this.getScanById(scanId);
-    return scanRepository.getScanTrackers(scanId);
+    const [trackers, requests] = await Promise.all([
+      scanRepository.getScanTrackers(scanId),
+      scanRepository.getNetworkRequests(scanId),
+    ]);
+
+    return {
+      trackers,
+      requests,
+    };
   }
 
   async getScanFindings(scanId: string) {

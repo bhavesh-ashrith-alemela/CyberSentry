@@ -54,7 +54,12 @@ export default function ScanReportPage() {
         api.getFindings(id).catch(() => ({ success: true, data: { findings: [], count: 0 } })),
       ]);
 
-      if (reportRes?.success) setReport(reportRes.data);
+      if (reportRes?.success && reportRes.data) {
+        setReport(reportRes.data);
+        if (reportRes.data.consentBanner) {
+          setBanner(reportRes.data.consentBanner);
+        }
+      }
       if (cookiesRes?.success) setCookies(cookiesRes.data.cookies || []);
       if (trackersRes?.success) setTrackers(trackersRes.data.requests || []);
       if (findingsRes?.success) setFindings(findingsRes.data.findings || []);

@@ -11,12 +11,16 @@ import { sendSuccess } from "../utils/response.js";
 export class ScanController {
   /**
    * POST /api/scans
-   * Submits a URL, verifies SSRF safety, executes scan & analysis, and persists full audit trail
+   * Submits a URL, verifies SSRF safety, creates scan record, and launches crawl asynchronously.
+   * If ?sync=true is specified, waits synchronously for scan completion.
    */
   async createScan(req: Request, res: Response, next: NextFunction) {
     try {
       const { url } = CreateScanSchema.parse(req.body);
-      const result = await scanService.executeScan(url);
+      const isSync = req.query.sync === "true";
+      const result = isSync
+        ? await scanService.executeScan(url)
+        : await scanService.startScan(url);
       return sendSuccess(res, result, 201);
     } catch (err) {
       next(err);
@@ -72,8 +76,12 @@ export class ScanController {
   async getScanTrackers(req: Request, res: Response, next: NextFunction) {
     try {
       const { id } = ScanIdParamSchema.parse(req.params);
-      const trackers = await scanService.getScanTrackers(id);
-      return sendSuccess(res, { count: trackers.length, trackers });
+      const data = await scanService.getScanTrackers(id);
+      return sendSuccess(res, {
+        count: data.trackers.length,
+        trackers: data.trackers,
+        requests: data.requests,
+      });
     } catch (err) {
       next(err);
     }

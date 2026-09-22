@@ -13,6 +13,7 @@ import {
   Report,
   CookieRecord,
   Finding,
+  NetworkRequest,
 } from "../db/schema.js";
 import { AnalysisResult } from "../analyzer/rules.js";
 import { DetailedBannerInfo } from "../scanner/bannerDetector.js";
@@ -297,6 +298,16 @@ export class ScanRepository {
       .select()
       .from(cookieRecords)
       .where(eq(cookieRecords.scanId, scanId));
+  }
+
+  /**
+   * Retrieves network requests captured during a scan
+   */
+  async getNetworkRequests(scanId: string): Promise<NetworkRequest[]> {
+    return db
+      .select()
+      .from(networkRequests)
+      .where(eq(networkRequests.scanId, scanId));
   }
 
   /**

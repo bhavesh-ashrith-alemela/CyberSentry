@@ -80,7 +80,8 @@ export const api = {
   // Get trackers
   getTrackers: async (scanId: string) => {
     return request<{
-      requests: NetworkRequest[];
+      trackers?: any[];
+      requests?: NetworkRequest[];
       count: number;
     }>(`/api/scans/${scanId}/trackers`);
   },

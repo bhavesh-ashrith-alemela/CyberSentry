@@ -54,6 +54,7 @@ export interface Report {
   grade: string;
   metrics: ReportMetrics;
   recommendations: string[];
+  consentBanner?: ConsentBanner | null;
   createdAt: string;
 }
 
