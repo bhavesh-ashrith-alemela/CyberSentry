@@ -269,7 +269,7 @@ export default function ScanReportPage() {
                   First-Party Cookies
                 </span>
                 <span className="text-lg font-bold text-slate-200">
-                  {metrics.totalCookies - metrics.thirdPartyCookies}
+                  {(metrics.totalCookies || 0) - (metrics.thirdPartyCookies || 0)}
                 </span>
               </div>
               <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">

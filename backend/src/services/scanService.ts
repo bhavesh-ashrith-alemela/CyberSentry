@@ -149,14 +149,24 @@ export class ScanService {
   }
 
   async getScanReport(scanId: string) {
-    await this.getScanById(scanId); // ensure exists
+    const scan = await this.getScanById(scanId); // ensure exists
+    if (scan.status === "failed") {
+      const err = new Error(scan.errorMessage ? `Scan failed: ${scan.errorMessage}` : "Scan failed to complete.");
+      (err as any).statusCode = 400;
+      throw err;
+    }
+
     const [report, banner] = await Promise.all([
       scanRepository.getReport(scanId),
       scanRepository.getConsentBanner(scanId),
     ]);
 
     if (!report) {
-      const err = new Error("Report not yet generated or scan did not complete.");
+      const err = new Error(
+        scan.status === "scanning" || scan.status === "analyzing" || scan.status === "pending"
+          ? `Scan is still ${scan.status}. Report is not yet ready.`
+          : "Report not found for this scan."
+      );
       (err as any).statusCode = 404;
       throw err;
     }

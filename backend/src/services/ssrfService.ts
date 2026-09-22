@@ -88,8 +88,8 @@ export async function validateUrlSafety(
 }> {
   let normalized = inputUrl.trim();
 
-  // Default to https if no protocol specified
-  if (!/^https?:\/\//i.test(normalized)) {
+  // Default to https if no protocol/scheme specified
+  if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//i.test(normalized)) {
     normalized = `https://${normalized}`;
   }
 

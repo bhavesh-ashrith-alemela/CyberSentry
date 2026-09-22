@@ -3,17 +3,35 @@ import { z } from "zod";
 export const CreateScanSchema = z.object({
   url: z
     .string({ required_error: "Website URL is required." })
-    .min(3, "URL is too short.")
+    .trim()
+    .min(1, "Website URL is required.")
     .max(2048, "URL is too long.")
-    .refine((val) => {
+    .superRefine((val, ctx) => {
+      // Reject explicit unsupported protocols (e.g. ftp://, file://, gopher://)
+      if (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//i.test(val) && !/^https?:\/\//i.test(val)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Only HTTP and HTTPS protocols are permitted.",
+        });
+        return;
+      }
+
       try {
         const testUrl = /^https?:\/\//i.test(val) ? val : `https://${val}`;
         const parsed = new URL(testUrl);
-        return parsed.hostname.length > 0;
+        if (!parsed.hostname || !parsed.hostname.includes(".")) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Please provide a valid website address with a domain name.",
+          });
+        }
       } catch {
-        return false;
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Please provide a valid website address.",
+        });
       }
-    }, "Please provide a valid website address."),
+    }),
 });
 
 export const ListScansQuerySchema = z.object({

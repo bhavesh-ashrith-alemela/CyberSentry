@@ -67,14 +67,16 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                title={item.label}
+                aria-label={item.label}
+                className={`flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                   isActive
                     ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-sm"
                     : "text-slate-300 hover:text-white hover:bg-slate-800/50"
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="hidden sm:inline">{item.label}</span>
               </Link>
             );
           })}

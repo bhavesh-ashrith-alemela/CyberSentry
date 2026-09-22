@@ -15,16 +15,23 @@ const API_BASE_URL =
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   const url = `${API_BASE_URL}${endpoint}`;
   try {
-    const res = await fetch(url, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-      cache: "no-store",
-    });
+    let res: Response;
+    try {
+      res = await fetch(url, {
+        ...options,
+        headers: {
+          "Content-Type": "application/json",
+          ...options.headers,
+        },
+        cache: "no-store",
+      });
+    } catch (networkErr: any) {
+      throw new Error(
+        `Unable to connect to CyberSentry Backend API at ${API_BASE_URL}. Please verify the backend server is running and network access is available.`
+      );
+    }
 
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     if (!res.ok) {
       throw new Error(data.error?.message || `Request failed with status ${res.status}`);
     }
