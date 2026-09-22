@@ -85,7 +85,7 @@ export async function runScan(
       value: c.value,
       domain: c.domain,
       path: c.path,
-      expires: c.expires,
+      expires: typeof c.expires === "number" && !isNaN(c.expires) ? Math.floor(c.expires) : -1,
       httpOnly: c.httpOnly,
       secure: c.secure,
       sameSite: (c.sameSite as "Strict" | "Lax" | "None") || "Lax",

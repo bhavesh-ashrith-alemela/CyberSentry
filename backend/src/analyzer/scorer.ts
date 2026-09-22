@@ -143,9 +143,10 @@ export function analyzeScan(
     const is3rdParty = isThirdPartyDomain(payload.targetDomain, c.domain);
     if (is3rdParty) thirdPartyCookieCount++;
 
-    const isSession = c.expires === -1 || c.expires === 0;
+    const expiresInt = typeof c.expires === "number" && !isNaN(c.expires) ? Math.floor(c.expires) : -1;
+    const isSession = expiresInt === -1 || expiresInt === 0;
     const lifespanSeconds =
-      !isSession && c.expires > currentTimestamp ? c.expires - currentTimestamp : 0;
+      !isSession && expiresInt > currentTimestamp ? expiresInt - currentTimestamp : 0;
     if (lifespanSeconds > oneYearSeconds) {
       excessiveLifespanCount++;
       if (sampleExcessiveCookies.length < 5) sampleExcessiveCookies.push(c.name);
@@ -176,7 +177,7 @@ export function analyzeScan(
       name: c.name,
       domain: c.domain,
       path: c.path,
-      expires: c.expires,
+      expires: expiresInt,
       isSession,
       isSecure: c.secure,
       isHttpOnly: c.httpOnly,

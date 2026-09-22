@@ -14,7 +14,7 @@
     "db:seed": "tsx src/db/seed.ts",
     "db:studio": "drizzle-kit studio",
     "db:check": "tsx -e \"import('./src/db/index.js').then(m => m.testConnection())\"",
-    "test": "tsx src/test-api.ts",
+    "test": "NODE_ENV=test tsx src/test-api.ts",
     "test:scanner": "tsx src/test-scanner.ts",
     "test:analyzer": "tsx src/analyzer/analyzer.test.ts"
   },

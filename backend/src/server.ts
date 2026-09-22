@@ -56,29 +56,38 @@ app.use((req, res) => {
 // Centralized Error Handler
 app.use(errorHandler);
 
-// Start Server: binds to 0.0.0.0 and listens on process.env.PORT
-const server = app.listen(env.PORT, env.HOST, async () => {
-  console.log("==================================================");
-  console.log(` CyberSentry Backend API`);
-  console.log(` Server bound to : http://${env.HOST}:${env.PORT}`);
-  console.log(` Environment    : ${env.NODE_ENV}`);
-  console.log(` Health Check   : http://${env.HOST}:${env.PORT}/api/health`);
-  console.log("==================================================");
+// Start Server: binds to 0.0.0.0 and listens on process.env.PORT (only when not in test mode)
+let server: any = null;
+if (process.env.NODE_ENV !== "test") {
+  server = app.listen(env.PORT, env.HOST, async () => {
+    console.log("==================================================");
+    console.log(` CyberSentry Backend API`);
+    console.log(` Server bound to : http://${env.HOST}:${env.PORT}`);
+    console.log(` Environment    : ${env.NODE_ENV}`);
+    console.log(` Health Check   : http://${env.HOST}:${env.PORT}/api/health`);
+    console.log("==================================================");
 
-  // Test database connection on startup
-  await testConnection();
-});
+    // Test database connection on startup
+    await testConnection();
+  });
+}
 
 // Graceful Shutdown
 async function shutdown(signal: string) {
   console.log(`\nReceived ${signal}. Gracefully shutting down CyberSentry...`);
-  server.close(async () => {
-    console.log("HTTP server closed.");
+  if (server) {
+    server.close(async () => {
+      console.log("HTTP server closed.");
+      await closeBrowser();
+      await pool.end().catch(() => {});
+      console.log("Database connection pool closed. Exiting process.");
+      process.exit(0);
+    });
+  } else {
     await closeBrowser();
     await pool.end().catch(() => {});
-    console.log("Database connection pool closed. Exiting process.");
     process.exit(0);
-  });
+  }
 
   // Force shutdown if cleanup exceeds 10s
   setTimeout(() => {

@@ -164,7 +164,7 @@ export class ScanRepository {
             name: c.name,
             domain: c.domain,
             path: c.path,
-            expires: c.expires,
+            expires: typeof c.expires === "number" && !isNaN(c.expires) ? Math.floor(c.expires) : -1,
             isSession: c.isSession,
             isSecure: c.isSecure,
             isHttpOnly: c.isHttpOnly,
