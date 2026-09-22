@@ -1,12 +1,11 @@
 services:
   - type: web
     name: cybersentry-backend
-    runtime: node
+    runtime: docker
     rootDir: backend
+    dockerfilePath: Dockerfile
     plan: free
     region: oregon
-    buildCommand: npm install && npx playwright install --with-deps chromium && npm run build
-    startCommand: node dist/db/migrate.js && node dist/server.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
