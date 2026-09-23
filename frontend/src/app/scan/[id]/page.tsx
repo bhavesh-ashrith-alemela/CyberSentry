@@ -11,8 +11,6 @@ import {
   CheckCircle2,
   ExternalLink,
   FileText,
-  Download,
-  Printer,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import {
@@ -31,7 +29,6 @@ import { FindingsList } from "@/components/FindingsList";
 import { TrackerChart } from "@/components/TrackerChart";
 import { CookieTable } from "@/components/CookieTable";
 import { StatusStepper } from "@/components/StatusStepper";
-import { EducationalGuidance } from "@/components/EducationalGuidance";
 
 export default function ScanReportPage() {
   const params = useParams();
@@ -130,39 +127,11 @@ export default function ScanReportPage() {
     }
   };
 
-  const handleExportJson = () => {
-    if (!scan) return;
-    const exportData = {
-      scan,
-      report,
-      cookies,
-      trackers,
-      findings,
-      banner,
-      exportedAt: new Date().toISOString(),
-    };
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `cybersentry-audit-${scan.website?.domain || scanId}-${new Date().toISOString().split("T")[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
   if (loading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-        <div className="h-10 w-10 rounded-full border-2 border-forest-200 border-t-forest-800 animate-spin mb-4" />
-        <p className="text-xs font-mono text-sand-600">Loading scan profile...</p>
+        <div className="h-10 w-10 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin mb-4" />
+        <p className="text-sm font-mono text-slate-400">Loading scan profile...</p>
       </div>
     );
   }
@@ -174,7 +143,7 @@ export default function ScanReportPage() {
         <div className="max-w-7xl mx-auto mb-6">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-mono text-sand-600 hover:text-forest-900 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-mono text-slate-400 hover:text-cyan-300 transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             <span>Back to URL Submission</span>
@@ -208,83 +177,60 @@ export default function ScanReportPage() {
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
       {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-white border border-sand-300 shadow-sm print:hidden">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Link
               href="/"
-              className="text-xs font-mono text-sand-600 hover:text-forest-900 transition-colors flex items-center gap-1"
+              className="text-xs font-mono text-slate-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
             >
               <ArrowLeft className="h-3 w-3" />
               <span>Audits</span>
             </Link>
-            <span className="text-sand-400">/</span>
-            <span className="text-xs font-mono text-forest-800 font-semibold">
+            <span className="text-slate-600">/</span>
+            <span className="text-xs font-mono text-cyan-400">
               {website?.domain || "Report"}
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-forest-950 flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-100 flex items-center gap-3">
             <span>{metrics.websiteTitle || website?.domain}</span>
             <a
               href={website?.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sand-400 hover:text-forest-900 transition-colors"
+              className="text-slate-500 hover:text-slate-300 transition-colors"
               title="Open Target Website in New Tab"
             >
               <ExternalLink className="h-4 w-4" />
             </a>
           </h1>
 
-          <p className="text-xs font-mono text-sand-600 mt-1 break-all">
+          <p className="text-xs font-mono text-slate-400 mt-1 break-all">
             Target URL: {website?.url}
           </p>
         </div>
 
-        {/* Metadata Badges & Export Actions */}
-        <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
-          <div className="px-2.5 py-1.5 rounded-lg bg-forest-50 border border-forest-200 text-forest-800 font-bold uppercase tracking-wider text-[10px]">
-            Status: Completed
-          </div>
-
-          <div className="px-3 py-1.5 rounded-lg bg-sand-100 border border-sand-200 text-forest-800 flex items-center gap-1.5 font-medium">
-            <Clock className="h-3.5 w-3.5 text-sand-500" />
+        {/* Metadata Badges */}
+        <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+          <div className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-slate-400" />
             <span>{formatDate(scan.createdAt)}</span>
           </div>
 
-          <div className="px-3 py-1.5 rounded-lg bg-sand-100 border border-sand-200 text-forest-800 flex items-center gap-1.5 font-medium">
-            <span className="text-sand-600">Duration:</span>
-            <span className="text-forest-950 font-bold">
+          <div className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 flex items-center gap-1.5">
+            <span>Duration:</span>
+            <span className="text-cyan-400 font-bold">
               {formatDuration(scan.durationMs)}
             </span>
           </div>
 
           <button
             onClick={handleRetry}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sand-100 text-forest-900 border border-sand-300 hover:bg-sand-200 transition-colors font-medium cursor-pointer"
-            title="Re-run audit on this target"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition-colors"
           >
             <RotateCw className="h-3.5 w-3.5" />
             <span>Re-Audit</span>
-          </button>
-
-          <button
-            onClick={handleExportJson}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sand-100 text-forest-900 border border-sand-300 hover:bg-sand-200 transition-colors font-medium cursor-pointer"
-            title="Download audit report as JSON"
-          >
-            <Download className="h-3.5 w-3.5 text-forest-700" />
-            <span>Export JSON</span>
-          </button>
-
-          <button
-            onClick={handlePrint}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-sand-100 text-forest-900 border border-sand-300 hover:bg-sand-200 transition-colors font-medium cursor-pointer"
-            title="Print or save as PDF"
-          >
-            <Printer className="h-3.5 w-3.5 text-forest-700" />
-            <span>Print</span>
           </button>
         </div>
       </div>
@@ -299,46 +245,46 @@ export default function ScanReportPage() {
         />
 
         {/* Executive Summary & Transparency Notice */}
-        <div className="lg:col-span-2 p-6 rounded-2xl bg-white border border-sand-300 flex flex-col justify-between shadow-sm">
+        <div className="lg:col-span-2 p-6 rounded-2xl bg-cyber-card border border-cyber-border flex flex-col justify-between shadow-xl">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-mono uppercase tracking-wider text-sand-600 flex items-center gap-1.5 font-semibold">
-                <FileText className="h-4 w-4 text-forest-800" />
+              <span className="text-xs font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <FileText className="h-4 w-4 text-cyan-400" />
                 <span>Executive Privacy Audit Summary</span>
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-forest-50 text-forest-800 border border-forest-200 font-medium">
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                 Deterministic
               </span>
             </div>
 
-            <p className="text-sm text-forest-900 leading-relaxed font-sans">
+            <p className="text-sm text-slate-200 leading-relaxed font-sans">
               {report?.summary ||
                 `Privacy transparency audit for ${website?.domain}: Score ${scan.score}/100, Grade ${scan.grade}.`}
             </p>
 
             {/* Quick Metrics Pills */}
             <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <div className="p-3 rounded-xl bg-sand-50 border border-sand-200">
-                <span className="text-[10px] font-mono text-sand-600 uppercase block">
+              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                <span className="text-[10px] font-mono text-slate-400 uppercase block">
                   First-Party Cookies
                 </span>
-                <span className="text-lg font-bold text-forest-950">
+                <span className="text-lg font-bold text-slate-200">
                   {(metrics.totalCookies || 0) - (metrics.thirdPartyCookies || 0)}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-sand-50 border border-sand-200">
-                <span className="text-[10px] font-mono text-sand-600 uppercase block">
+              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                <span className="text-[10px] font-mono text-slate-400 uppercase block">
                   Third-Party Cookies
                 </span>
-                <span className="text-lg font-bold text-amber-800">
+                <span className="text-lg font-bold text-orange-400">
                   {metrics.thirdPartyCookies}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-sand-50 border border-sand-200 col-span-2 sm:col-span-1">
-                <span className="text-[10px] font-mono text-sand-600 uppercase block">
+              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 col-span-2 sm:col-span-1">
+                <span className="text-[10px] font-mono text-slate-400 uppercase block">
                   Known Trackers
                 </span>
-                <span className="text-lg font-bold text-rust-800">
+                <span className="text-lg font-bold text-rose-400">
                   {metrics.totalTrackers}
                 </span>
               </div>
@@ -346,8 +292,8 @@ export default function ScanReportPage() {
           </div>
 
           {/* Legal Notice Callout */}
-          <div className="mt-6 pt-4 border-t border-sand-200 text-[11px] font-mono text-sand-500 flex items-start gap-2">
-            <Shield className="h-4 w-4 text-sand-500 shrink-0 mt-0.5" />
+          <div className="mt-6 pt-4 border-t border-cyber-border text-[11px] font-mono text-slate-500 flex items-start gap-2">
+            <Shield className="h-4 w-4 text-slate-600 shrink-0 mt-0.5" />
             <span>
               Disclaimer: This assessment measures observable client-side telemetry and
               transparency heuristics. It does NOT constitute formal legal advice or GDPR/CCPA
@@ -374,14 +320,14 @@ export default function ScanReportPage() {
         <TrackerChart requests={trackers} />
 
         {/* Actionable Recommendations Checklist */}
-        <div className="p-6 rounded-2xl bg-white border border-sand-300 shadow-sm flex flex-col justify-between">
+        <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl flex flex-col justify-between">
           <div>
-            <div className="border-b border-sand-200 pb-4 mb-4">
-              <h3 className="text-base font-bold text-forest-950 flex items-center gap-2 tracking-tight">
-                <CheckCircle2 className="h-4 w-4 text-forest-700" />
+            <div className="border-b border-cyber-border/80 pb-4 mb-4">
+              <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
                 <span>Technical Recommendations</span>
               </h3>
-              <p className="text-xs text-sand-600 font-mono mt-1">
+              <p className="text-xs text-slate-400 font-mono mt-1">
                 Remediation steps for developers and site operators to elevate privacy posture.
               </p>
             </div>
@@ -394,9 +340,9 @@ export default function ScanReportPage() {
               ]).map((rec, i) => (
                 <li
                   key={i}
-                  className="p-3 rounded-xl bg-sand-50 border border-sand-200 text-xs text-forest-900 flex items-start gap-2.5"
+                  className="p-3 rounded-xl bg-slate-900/40 border border-slate-800 text-xs text-slate-300 flex items-start gap-2.5"
                 >
-                  <span className="h-5 w-5 rounded-full bg-forest-50 text-forest-800 border border-forest-200 text-[10px] font-mono flex items-center justify-center shrink-0 mt-0.5 font-semibold">
+                  <span className="h-5 w-5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono flex items-center justify-center shrink-0 mt-0.5">
                     {i + 1}
                   </span>
                   <span className="leading-relaxed">{rec}</span>
@@ -405,7 +351,7 @@ export default function ScanReportPage() {
             </ul>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-sand-200 text-center text-[11px] font-mono text-sand-500">
+          <div className="mt-4 pt-3 border-t border-cyber-border text-center text-[11px] font-mono text-slate-500">
             Applying these remediations directly mitigates the identified score deductions.
           </div>
         </div>
@@ -416,9 +362,6 @@ export default function ScanReportPage() {
 
       {/* Stored Cookie Ledger Table */}
       <CookieTable cookies={cookies} />
-
-      {/* Educational Guidance Glossary */}
-      <EducationalGuidance />
     </div>
   );
 }

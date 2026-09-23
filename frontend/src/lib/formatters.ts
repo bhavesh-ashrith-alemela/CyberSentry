@@ -28,34 +28,58 @@ export function formatScoreColor(score: number | null | undefined): {
 } {
   if (score === null || score === undefined) {
     return {
-      text: "text-forest-500",
-      bg: "bg-sand-100",
-      border: "border-sand-300",
-      badge: "bg-sand-200 text-forest-700 border-sand-300",
+      text: "text-slate-400",
+      bg: "bg-slate-800/50",
+      border: "border-slate-700",
+      badge: "bg-slate-700 text-slate-300",
     };
   }
 
-  if (score >= 80) {
+  if (score >= 90) {
     return {
-      text: "text-forest-800",
-      bg: "bg-forest-50",
-      border: "border-forest-200",
-      badge: "bg-forest-100 text-forest-900 border-forest-300",
+      text: "text-emerald-400",
+      bg: "bg-emerald-950/30",
+      border: "border-emerald-500/40",
+      badge: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
     };
   }
-  if (score >= 60) {
+  if (score >= 80) {
     return {
-      text: "text-amber-800",
-      bg: "bg-amber-50",
-      border: "border-amber-200",
-      badge: "bg-amber-100 text-amber-900 border-amber-300",
+      text: "text-cyan-400",
+      bg: "bg-cyan-950/30",
+      border: "border-cyan-500/40",
+      badge: "bg-cyan-500/20 text-cyan-400 border-cyan-500/30",
+    };
+  }
+  if (score >= 70) {
+    return {
+      text: "text-blue-400",
+      bg: "bg-blue-950/30",
+      border: "border-blue-500/40",
+      badge: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+    };
+  }
+  if (score >= 55) {
+    return {
+      text: "text-amber-400",
+      bg: "bg-amber-950/30",
+      border: "border-amber-500/40",
+      badge: "bg-amber-500/20 text-amber-400 border-amber-500/30",
+    };
+  }
+  if (score >= 40) {
+    return {
+      text: "text-orange-400",
+      bg: "bg-orange-950/30",
+      border: "border-orange-500/40",
+      badge: "bg-orange-500/20 text-orange-400 border-orange-500/30",
     };
   }
   return {
-    text: "text-rust-800",
-    bg: "bg-rust-50",
-    border: "border-rust-200",
-    badge: "bg-rust-100 text-rust-900 border-rust-300",
+    text: "text-rose-400",
+    bg: "bg-rose-950/30",
+    border: "border-rose-500/40",
+    badge: "bg-rose-500/20 text-rose-400 border-rose-500/30",
   };
 }
 
@@ -67,33 +91,33 @@ export function formatSeverityBadge(severity: string): {
   switch (severity?.toLowerCase()) {
     case "critical":
       return {
-        color: "text-rust-800",
-        bg: "bg-rust-50",
-        border: "border-rust-200",
+        color: "text-rose-400",
+        bg: "bg-rose-500/10",
+        border: "border-rose-500/30",
       };
     case "high":
       return {
-        color: "text-rust-700",
-        bg: "bg-rust-50",
-        border: "border-rust-200",
+        color: "text-orange-400",
+        bg: "bg-orange-500/10",
+        border: "border-orange-500/30",
       };
     case "medium":
       return {
-        color: "text-amber-800",
-        bg: "bg-amber-50",
-        border: "border-amber-200",
+        color: "text-amber-400",
+        bg: "bg-amber-500/10",
+        border: "border-amber-500/30",
       };
     case "low":
       return {
-        color: "text-forest-700",
-        bg: "bg-forest-50",
-        border: "border-forest-200",
+        color: "text-blue-400",
+        bg: "bg-blue-500/10",
+        border: "border-blue-500/30",
       };
     default:
       return {
-        color: "text-forest-600",
-        bg: "bg-sand-100",
-        border: "border-sand-300",
+        color: "text-slate-400",
+        bg: "bg-slate-500/10",
+        border: "border-slate-500/30",
       };
   }
 }

@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #F9FAF9;
-  --foreground: #16201B;
+  --background: #080c14;
+  --foreground: #f8fafc;
 }
 
 body {
@@ -12,91 +12,43 @@ body {
   background-color: var(--background);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Subtle, refined scrollbar */
+/* Custom Scrollbar for cyber aesthetic */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #F2F4F2;
+  background: #0b1120;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CAD0CA;
-  border-radius: 9999px;
+  background: #1e293b;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #A4ACA6;
+  background: #334155;
 }
 
-/* Editorial subtle borders and card utilities */
-.hairline-b {
-  border-bottom: 1px solid #E0E4E0;
+/* Subtle tech grid background */
+.bg-tech-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(30, 41, 59, 0.25) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(30, 41, 59, 0.25) 1px, transparent 1px);
 }
 
-.hairline-t {
-  border-top: 1px solid #E0E4E0;
+.glow-cyan {
+  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.25);
 }
 
-.editorial-card {
-  background-color: #FFFFFF;
-  border: 1px solid #E0E4E0;
-  border-radius: 1rem;
-  box-shadow: 0 1px 3px rgba(22, 32, 27, 0.04);
+.glow-rose {
+  box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.25);
 }
 
-/* Universal Keyboard Focus Indicator (WCAG 2.1 AA / AAA compliant) */
-*:focus-visible {
-  outline: 2px solid #28553E !important;
-  outline-offset: 2px !important;
+.glow-emerald {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
 }
-
-/* Reduced Motion Preference Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  ::before,
-  ::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* Print Stylesheet for PDF & Paper Reports */
-@media print {
-  header,
-  footer,
-  .print-hidden,
-  button,
-  input,
-  select {
-    display: none !important;
-  }
-
-  body {
-    background-color: #ffffff !important;
-    color: #16201B !important;
-    font-size: 11pt;
-  }
-
-  .shadow-card,
-  .shadow-subtle,
-  .shadow-sm,
-  .shadow-md,
-  .shadow-lg {
-    box-shadow: none !important;
-  }
-
-  .rounded-2xl,
-  .rounded-3xl {
-    border-radius: 8px !important;
-  }
-}
-
