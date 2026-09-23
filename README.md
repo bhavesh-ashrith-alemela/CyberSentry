@@ -21,6 +21,7 @@
 - [Why CyberSentry?](#-why-cybersentry)
 - [Key Features](#-key-features)
 - [System Architecture](#-system-architecture)
+- [System Design Diagrams & Traceability](#-system-design-diagrams--traceability)
 - [Technology Stack](#-technology-stack)
 - [Project Directory Structure](#-project-directory-structure)
 - [Getting Started Locally](#-getting-started-locally)
@@ -54,7 +55,7 @@ CyberSentry launches an isolated, headless Chromium browser, captures client-sid
 1. **Zero Black-Box AI / LLM Hallucinations**: Every deduction, rule violation, and score deduction is computed through strictly deterministic, reproducible algorithms backed by recorded HTTP requests, DOM structures, and cookie storage states.
 2. **Empirical Evidence Chains**: Findings are accompanied by raw technical proof (request URLs, cookie attributes, selector bounding boxes, timestamps) stored in PostgreSQL.
 3. **Multi-Layer Defensive Security**: Protected by an exhaustive Server-Side Request Forgery (SSRF) defense engine blocking private subnets, cloud metadata endpoints, loopbacks, and DNS rebinding attacks.
-4. **Editorial Swiss Design**: Built with a clean, typography-first, minimalist aesthetic inspired by modern design systems, offering high readability across desktop, tablet, and mobile viewports.
+4. **Dark Cybersecurity Interface**: Built with a cybersecurity-inspired dark theme (`#080c14` canvas, glowing cyan `#06b6d4` indicators, active radar animations, and responsive components) offering high clarity across desktop, tablet, and mobile viewports.
 
 ---
 
@@ -85,9 +86,8 @@ CyberSentry launches an isolated, headless Chromium browser, captures client-sid
 - **📜 Persistent Audit History**:
   - Searchable domain index with instant filtering.
   - Multi-select comparative drawer allowing users to pick two historical scans and launch a comparison.
-- **📄 Export Functionality**:
-  - **Export JSON**: One-click download of full structured telemetry and findings.
-  - **Print / PDF**: Custom `@media print` styling that hides navigation and buttons for official PDF reporting.
+- **📄 Export Functionality (Planned / Roadmap)**:
+  - Architecture and schemas support extensible export pipelines for structured audit telemetry in JSON, CSV, and printable PDF formats.
 
 ---
 
@@ -136,6 +136,25 @@ CyberSentry is built on an independently deployable, decoupled architecture:
 │         (Drizzle ORM, Connection Pooling, Cascade Logic)          │
 └───────────────────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 📐 System Design Diagrams & Traceability
+
+The system design of CyberSentry is formally documented through 8 architectural models, verified for design-to-code traceability:
+
+| Diagram # | System Design Diagram | File Location | Consistency Score | Verification Link |
+|---|---|---|:---:|:---:|
+| **1** | **System Architecture** | [`diagrams/system architecture.png`](diagrams/system%20architecture.png) | **90%** | [Traceability Audit](docs/DESIGN_TRACEABILITY_REPORT.md#1-system-architecture-diagram) |
+| **2** | **DFD Level 0 (Context Diagram)** | [`diagrams/DFD.jpeg`](diagrams/DFD.jpeg) | **95%** | [Traceability Audit](docs/DESIGN_TRACEABILITY_REPORT.md#2-data-flow-diagram-dfd-level-0--context-diagram) |
+| **3** | **DFD Level 1** | [`diagrams/DFD.jpeg`](diagrams/DFD.jpeg) | **92%** | [Traceability Audit](docs/DESIGN_TRACEABILITY_REPORT.md#3-data-flow-diagram-dfd-level-1) |
+| **4** | **UML Use Case Diagram** | [`diagrams/use case uml.png`](diagrams/use%20case%20uml.png) | **88%** | [Traceability Audit](docs/DESIGN_TRACEABILITY_REPORT.md#4-uml-use-case-diagram) |
+| **5** | **UML Class Diagram** | [`diagrams/class uml.png`](diagrams/class%20uml.png) | **82%** | [Traceability Audit](docs/DESIGN_TRACEABILITY_REPORT.md#5-uml-class-diagram) |
+| **6** | **UML Sequence Diagram** | [`diagrams/sequence uml.png`](diagrams/sequence%20uml.png) | **90%** | [Traceability Audit](docs/DESIGN_TRACEABILITY_REPORT.md#6-uml-sequence-diagram) |
+| **7** | **UML Activity Diagram** | [`diagrams/Activity UML.png`](diagrams/Activity%20UML.png) | **92%** | [Traceability Audit](docs/DESIGN_TRACEABILITY_REPORT.md#7-uml-activity-diagram) |
+| **8** | **Entity-Relationship (ER) Diagram** | [`diagrams/ER.png`](diagrams/ER.png) | **92%** | [Traceability Audit](docs/DESIGN_TRACEABILITY_REPORT.md#8-entity-relationship-er-diagram-alignment) |
+
+> 📑 **Full Academic Traceability Audit**: Read [`docs/DESIGN_TRACEABILITY_REPORT.md`](docs/DESIGN_TRACEABILITY_REPORT.md) for detailed component-by-component evidence, database table mappings, and API route proofs.
 
 ---
 
@@ -199,7 +218,6 @@ CyberSentry/
 │   │   ├── components/             # Reusable UI components
 │   │   │   ├── ConsentCard.tsx     # Choice architecture audit card
 │   │   │   ├── CookieTable.tsx     # Stored cookie ledger with security flags
-│   │   │   ├── EducationalGuidance.tsx # Plain-language compliance glossary
 │   │   │   ├── FindingsList.tsx    # Evidence-based findings with remediation
 │   │   │   ├── Footer.tsx          # Legal disclaimer & academic footer
 │   │   │   ├── MetricsGrid.tsx     # Key telemetry metric tiles
@@ -211,6 +229,18 @@ CyberSentry/
 │   ├── package.json
 │   ├── tailwind.config.ts
 │   └── tsconfig.json
+│
+├── diagrams/                       # Academic system design diagrams
+│   ├── Activity UML.png            # UML Activity Diagram
+│   ├── DFD.jpeg                    # DFD Level 0 & Level 1 Context Diagram
+│   ├── ER.png                      # Entity-Relationship Diagram
+│   ├── class uml.png               # UML Class Diagram
+│   ├── sequence uml.png            # UML Sequence Diagram
+│   ├── system architecture.png     # Full System Architecture Diagram
+│   └── use case uml.png            # UML Use Case Diagram
+│
+├── docs/                           # Academic audits & verification reports
+│   └── DESIGN_TRACEABILITY_REPORT.md # Design-to-code traceability report
 │
 ├── render.yaml                     # Render Blueprint infrastructure definition
 └── README.md                       # Official documentation
