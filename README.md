@@ -202,6 +202,7 @@ CyberSentry/
 │   │   ├── services/               # SSRF validation, scan orchestration
 │   │   ├── server.ts               # Express server entry point (PORT/HOST binding)
 │   │   └── test-comprehensive.ts   # 20-scenario exhaustive verification test suite
+│   ├── Dockerfile                  # Production containerfile (Playwright Jammy base)
 │   ├── package.json
 │   └── tsconfig.json
 │
