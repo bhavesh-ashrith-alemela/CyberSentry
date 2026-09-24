@@ -202,7 +202,6 @@ CyberSentry/
 │   │   ├── services/               # SSRF validation, scan orchestration
 │   │   ├── server.ts               # Express server entry point (PORT/HOST binding)
 │   │   └── test-comprehensive.ts   # 20-scenario exhaustive verification test suite
-│   ├── Dockerfile                  # Production containerfile (Playwright Jammy base)
 │   ├── package.json
 │   └── tsconfig.json
 │
@@ -211,7 +210,7 @@ CyberSentry/
 │   │   ├── app/                    # Next.js App Router pages
 │   │   │   ├── layout.tsx          # Root layout with Navbar and Footer
 │   │   │   ├── page.tsx            # Homepage with scan console and preview
-│   │   │   ├── globals.css         # Swiss typography, focus rings & print styles
+│   │   │   ├── globals.css         # Dark theme tokens & cyber aesthetic styles
 │   │   │   ├── history/page.tsx    # Persistent audit history table
 │   │   │   ├── compare/page.tsx    # Side-by-side comparative analysis
 │   │   │   └── scan/[id]/page.tsx  # Dynamic scan status & full privacy report
