@@ -11,6 +11,12 @@ import {
   CheckCircle2,
   ExternalLink,
   FileText,
+  Terminal,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  AlertCircle,
+  Check,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import {
@@ -43,6 +49,7 @@ export default function ScanReportPage() {
   const [banner, setBanner] = useState<ConsentBanner | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
 
   // Fetch full report data once scan completes
   const fetchCompletedReportData = useCallback(async (id: string) => {
@@ -250,14 +257,14 @@ export default function ScanReportPage() {
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                 <FileText className="h-4 w-4 text-cyan-400" />
-                <span>Executive Privacy Audit Summary</span>
+                <span>Executive Privacy Verdict</span>
               </span>
               <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                Deterministic
+                Empirical Audit
               </span>
             </div>
 
-            <p className="text-sm text-slate-200 leading-relaxed font-sans">
+            <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-sans">
               {report?.summary ||
                 `Privacy transparency audit for ${website?.domain}: Score ${scan.score}/100, Grade ${scan.grade}.`}
             </p>
@@ -295,40 +302,93 @@ export default function ScanReportPage() {
           <div className="mt-6 pt-4 border-t border-cyber-border text-[11px] font-mono text-slate-500 flex items-start gap-2">
             <Shield className="h-4 w-4 text-slate-600 shrink-0 mt-0.5" />
             <span>
-              Disclaimer: This assessment measures observable client-side telemetry and
-              transparency heuristics. It does NOT constitute formal legal advice or GDPR/CCPA
-              certification.
+              Disclaimer: Measures observable client-side telemetry and choice transparency. Does not constitute formal statutory legal certification.
             </span>
           </div>
         </div>
       </div>
 
-      {/* Key Metrics Cards */}
+      {/* Friendly Traffic-Light Status Cards */}
       <MetricsGrid
         metrics={metrics}
         bannerDetected={bannerDetected}
         cmpName={cmpName}
-        findingsCount={findings.length}
+        banner={banner}
+        findings={findings}
       />
 
-      {/* Consent Banner & Dark Pattern Heuristics Card */}
-      <ConsentCard banner={banner} metrics={metrics} />
-
-      {/* Tracker Visualizer & Actionable Recommendations */}
+      {/* Plain-English Overview: Key Observations & Actionable Fixes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Outbound Network Request Distribution */}
-        <TrackerChart requests={trackers} />
+        {/* Left: Key Observations in Plain Language */}
+        <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl flex flex-col justify-between">
+          <div>
+            <div className="border-b border-cyber-border/80 pb-4 mb-4">
+              <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-cyan-400" />
+                <span>Key Findings in Plain English</span>
+              </h3>
+              <p className="text-xs text-slate-400 font-mono mt-1">
+                What our audit detected about this site&apos;s privacy practices.
+              </p>
+            </div>
 
-        {/* Actionable Recommendations Checklist */}
+            <div className="space-y-3">
+              {findings.length === 0 ? (
+                <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2">
+                  <Check className="h-4 w-4 text-emerald-400" />
+                  <span>No privacy violations found! This site respects visitor choice.</span>
+                </div>
+              ) : (
+                findings.slice(0, 5).map((f, i) => (
+                  <div
+                    key={i}
+                    className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex items-start gap-3"
+                  >
+                    <div className="mt-0.5">
+                      {f.severity === "critical" || f.severity === "high" ? (
+                        <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
+                      ) : f.severity === "medium" ? (
+                        <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 text-cyan-400 shrink-0" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-xs sm:text-sm font-semibold text-slate-200">
+                        {f.title}
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                        {f.description}
+                      </p>
+                    </div>
+                    {f.scoreDeduction > 0 && (
+                      <span className="text-[11px] font-mono text-rose-400 font-bold px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 shrink-0">
+                        -{f.scoreDeduction}
+                      </span>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-cyber-border text-[11px] font-mono text-slate-500 text-center">
+            {findings.length > 5
+              ? `Showing top 5 of ${findings.length} findings. Expand below for complete technical logs.`
+              : "All findings summarized above."}
+          </div>
+        </div>
+
+        {/* Right: Actionable Fixes & Recommendations */}
         <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl flex flex-col justify-between">
           <div>
             <div className="border-b border-cyber-border/80 pb-4 mb-4">
               <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                <span>Technical Recommendations</span>
+                <span>What Should Be Done</span>
               </h3>
               <p className="text-xs text-slate-400 font-mono mt-1">
-                Remediation steps for developers and site operators to elevate privacy posture.
+                Clear action steps to elevate privacy transparency and compliance.
               </p>
             </div>
 
@@ -340,7 +400,7 @@ export default function ScanReportPage() {
               ]).map((rec, i) => (
                 <li
                   key={i}
-                  className="p-3 rounded-xl bg-slate-900/40 border border-slate-800 text-xs text-slate-300 flex items-start gap-2.5"
+                  className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 flex items-start gap-2.5"
                 >
                   <span className="h-5 w-5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono flex items-center justify-center shrink-0 mt-0.5">
                     {i + 1}
@@ -357,11 +417,53 @@ export default function ScanReportPage() {
         </div>
       </div>
 
-      {/* Evidence-based Findings List */}
-      <FindingsList findings={findings} />
+      {/* Collapsible Section: Detailed Technical Audit & Developer Logs */}
+      <div className="pt-6 border-t border-cyber-border">
+        <button
+          onClick={() => setShowTechnicalDetails(!showTechnicalDetails)}
+          className="w-full flex items-center justify-between p-5 rounded-2xl bg-cyber-card border border-cyber-border hover:border-cyan-500/40 transition-all text-left group shadow-lg"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:scale-105 transition-transform">
+              <Terminal className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="text-sm sm:text-base font-bold text-slate-100 flex items-center gap-2">
+                <span>Detailed Technical Audit & Developer Logs</span>
+                <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-400 border border-slate-700">
+                  Examiners & Engineers
+                </span>
+              </h4>
+              <p className="text-xs text-slate-400 font-mono mt-0.5">
+                {showTechnicalDetails
+                  ? "Click to collapse raw cookie tables, network distribution charts, and JSON evidence"
+                  : "Click to inspect complete cookie ledger, request distribution charts, and raw JSON evidence"}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 bg-cyan-500/10 px-3.5 py-1.5 rounded-lg border border-cyan-500/20 shrink-0">
+            <span>{showTechnicalDetails ? "Hide Details" : "Show Details"}</span>
+            {showTechnicalDetails ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </div>
+        </button>
 
-      {/* Stored Cookie Ledger Table */}
-      <CookieTable cookies={cookies} />
+        {/* Expanded Technical Content */}
+        {showTechnicalDetails && (
+          <div className="mt-8 space-y-8">
+            {/* Consent Banner & Dark Pattern Heuristics Card */}
+            <ConsentCard banner={banner} metrics={metrics} />
+
+            {/* Outbound Network Request Distribution Chart */}
+            <TrackerChart requests={trackers} />
+
+            {/* Evidence-based Findings List with Rule Codes and JSON Payloads */}
+            <FindingsList findings={findings} />
+
+            {/* Stored Cookie Ledger Table */}
+            <CookieTable cookies={cookies} />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
