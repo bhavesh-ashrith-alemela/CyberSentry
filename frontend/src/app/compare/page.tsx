@@ -16,11 +16,22 @@ import {
   AlertTriangle,
   ArrowLeft,
   Loader2,
-  CheckCircle2,
+  ExternalLink,
+  ChevronRight,
+  FileText,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { Scan, Report, Finding, ScanComparison } from "@/lib/types";
-import { formatDate, formatScoreColor } from "@/lib/formatters";
+import { formatDate } from "@/lib/formatters";
+import {
+  PaperCard,
+  FolderTab,
+  FolderCard,
+  EditorialBadge,
+  FileLabel,
+  SectionHeader,
+  StampBadge,
+} from "@/components/ui";
 
 function CompareContent() {
   const router = useRouter();
@@ -43,7 +54,7 @@ function CompareContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load scan list for dropdowns
+  // Load scan list for dropdown selectors
   useEffect(() => {
     api
       .listScans({ limit: 50 })
@@ -56,7 +67,7 @@ function CompareContent() {
       .catch(() => {});
   }, []);
 
-  // Execute comparison when both IDs exist
+  // Fetch comparison data whenever both scan IDs are provided
   useEffect(() => {
     if (!scanAId || !scanBId) return;
 
@@ -107,37 +118,43 @@ function CompareContent() {
   const trackersDiff = (reportB?.metrics?.totalTrackers || 0) - (reportA?.metrics?.totalTrackers || 0);
 
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl">
+    <div className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-10">
+      
+      {/* Editorial Header */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-cs-border/80 pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Link
               href="/history"
-              className="text-xs font-mono text-slate-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
+              className="text-xs font-mono text-cs-muted hover:text-cs-denim transition-colors flex items-center gap-1"
             >
               <ArrowLeft className="h-3 w-3" />
-              <span>History</span>
+              <span>Archives</span>
             </Link>
-            <span className="text-slate-600">/</span>
-            <span className="text-xs font-mono text-cyan-400">Comparison</span>
+            <span className="text-cs-muted/60">/</span>
+            <FileLabel brackets variant="denim">
+              DOSSIER COMPARISON
+            </FileLabel>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-100 flex items-center gap-3">
-            <GitCompare className="h-7 w-7 text-cyber-accent" />
-            <span>Side-by-Side Scan Comparison</span>
+          <h1 className="text-3xl sm:text-4xl font-bold font-display text-cs-ink tracking-tight">
+            Two Websites.{" "}
+            <span className="editorial-italic text-cs-denim font-normal ml-1">
+              One Evidence Set.
+            </span>
           </h1>
-          <p className="text-xs text-slate-400 font-mono mt-1">
-            Compare privacy transparency metrics, tracker exposures, and score differentials.
+
+          <p className="mt-1 text-xs sm:text-sm text-cs-muted font-sans max-w-xl">
+            Compare empirical privacy transparency observations and telemetry deltas across two completed audits.
           </p>
         </div>
 
-        {/* Scan Selectors */}
-        <div className="flex flex-col sm:flex-row items-center gap-3">
+        {/* Scan Selector Controls */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           {/* Selector A */}
-          <div className="w-full sm:w-56">
-            <label className="text-[10px] font-mono text-slate-400 uppercase block mb-1">
-              Baseline Scan (A)
+          <div className="w-full sm:w-56 space-y-1">
+            <label className="text-[10px] font-mono text-cs-muted uppercase font-bold block">
+              Dossier A (Baseline)
             </label>
             <select
               value={scanAId}
@@ -145,7 +162,7 @@ function CompareContent() {
                 setScanAId(e.target.value);
                 router.push(`/compare?scanA=${e.target.value}&scanB=${scanBId}`);
               }}
-              className="w-full px-3 py-2 rounded-xl text-xs font-mono bg-slate-900 border border-slate-800 focus:border-cyan-500 focus:outline-none text-slate-200"
+              className="w-full px-3 py-2 rounded-xl text-xs font-mono bg-cs-paper border border-cs-border focus:border-cs-denim focus:outline-none text-cs-ink shadow-xs"
             >
               <option value="">Select Baseline...</option>
               {availableScans.map((s) => (
@@ -156,12 +173,14 @@ function CompareContent() {
             </select>
           </div>
 
-          <div className="text-slate-600 font-mono hidden sm:block pt-4">vs</div>
+          <div className="text-cs-muted font-mono font-bold text-xs self-center pt-3 hidden sm:block">
+            vs
+          </div>
 
           {/* Selector B */}
-          <div className="w-full sm:w-56">
-            <label className="text-[10px] font-mono text-slate-400 uppercase block mb-1">
-              Comparison Scan (B)
+          <div className="w-full sm:w-56 space-y-1">
+            <label className="text-[10px] font-mono text-cs-muted uppercase font-bold block">
+              Dossier B (Target)
             </label>
             <select
               value={scanBId}
@@ -169,7 +188,7 @@ function CompareContent() {
                 setScanBId(e.target.value);
                 router.push(`/compare?scanA=${scanAId}&scanB=${e.target.value}`);
               }}
-              className="w-full px-3 py-2 rounded-xl text-xs font-mono bg-slate-900 border border-slate-800 focus:border-cyan-500 focus:outline-none text-slate-200"
+              className="w-full px-3 py-2 rounded-xl text-xs font-mono bg-cs-paper border border-cs-border focus:border-cs-denim focus:outline-none text-cs-ink shadow-xs"
             >
               <option value="">Select Target...</option>
               {availableScans.map((s) => (
@@ -184,63 +203,71 @@ function CompareContent() {
 
       {/* Loading State */}
       {loading ? (
-        <div className="min-h-[40vh] flex flex-col items-center justify-center p-8 rounded-2xl bg-cyber-card border border-cyber-border text-center">
-          <Loader2 className="h-8 w-8 text-cyan-400 animate-spin mb-3" />
-          <p className="text-xs font-mono text-slate-400">Computing differential audit telemetry...</p>
+        <div className="min-h-[40vh] flex flex-col items-center justify-center p-8 rounded-2xl border border-cs-border bg-cs-paper text-center">
+          <Loader2 className="h-8 w-8 text-cs-denim animate-spin mb-3" />
+          <p className="text-xs font-mono text-cs-muted">Computing differential telemetry...</p>
         </div>
       ) : error ? (
-        <div className="p-8 text-center rounded-2xl bg-cyber-card border border-rose-500/40 text-rose-300">
-          <AlertTriangle className="h-8 w-8 text-rose-400 mx-auto mb-2" />
-          <p className="text-sm font-semibold">{error}</p>
+        <div className="p-8 text-center rounded-2xl border border-cs-pink bg-cs-pink-light/40 text-cs-danger">
+          <AlertTriangle className="h-8 w-8 text-cs-danger mx-auto mb-2" />
+          <p className="text-sm font-bold font-sans">{error}</p>
         </div>
       ) : !scanA || !scanB ? (
-        <div className="p-12 text-center rounded-2xl bg-cyber-card border border-cyber-border">
-          <GitCompare className="h-10 w-10 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-base font-bold text-slate-200">Select Two Audits to Compare</h3>
-          <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">
-            Choose a baseline audit and a comparison audit from the dropdowns above or select two entries in the Scan History table.
+        /* Empty / Unselected State */
+        <div className="p-12 sm:p-16 text-center rounded-2xl border border-cs-border bg-cs-paper shadow-paper space-y-3">
+          <GitCompare className="h-12 w-12 text-cs-muted/80 mx-auto stroke-[1.5]" />
+          <h3 className="text-lg font-bold text-cs-ink font-sans">
+            Select Two Audits to Compare
+          </h3>
+          <p className="text-xs sm:text-sm text-cs-muted max-w-md mx-auto font-sans">
+            Choose a baseline audit and a target audit from the selectors above or select two records from the Privacy Files archive.
           </p>
         </div>
       ) : (
-        <>
-          {/* Differential Metrics Summary Card */}
-          <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl">
-            <h3 className="text-xs font-mono uppercase tracking-wider text-slate-400 mb-4">
-              Differential Audit Summary (Scan B vs Scan A)
-            </h3>
+        <div className="space-y-10">
+          
+          {/* Section 1: Differential Summary Metrics Card */}
+          <PaperCard variant="default" className="space-y-4">
+            <div className="flex items-center justify-between border-b border-cs-border/80 pb-3">
+              <FileLabel code="DIFFERENTIAL_SUMMARY" variant="muted" />
+              <span className="font-mono text-xs text-cs-muted">
+                Observed Difference (Dossier B vs Dossier A)
+              </span>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {/* Score Delta */}
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              
+              {/* Score Difference */}
+              <div className="p-4 rounded-xl bg-cs-cream/40 border border-cs-border flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-mono text-slate-400 uppercase block">
+                  <span className="text-[10px] font-mono text-cs-muted uppercase block font-bold">
                     Score Difference
                   </span>
                   <div className="mt-1 flex items-baseline gap-2">
                     <span
-                      className={`text-2xl font-black ${
+                      className={`text-2xl sm:text-3xl font-black font-display ${
                         scoreDiff > 0
-                          ? "text-emerald-400"
+                          ? "text-cs-safe"
                           : scoreDiff < 0
-                          ? "text-rose-400"
-                          : "text-slate-300"
+                          ? "text-cs-danger"
+                          : "text-cs-ink"
                       }`}
                     >
                       {scoreDiff > 0 ? `+${scoreDiff}` : scoreDiff} pts
                     </span>
-                    <span className="text-xs font-mono text-slate-400">
+                    <span className="text-xs font-mono text-cs-muted">
                       ({scanA.grade} → {scanB.grade})
                     </span>
                   </div>
                 </div>
 
                 <div
-                  className={`p-2.5 rounded-xl border ${
+                  className={`p-2 rounded-xl border ${
                     scoreDiff > 0
-                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                      ? "bg-cs-olive-light text-cs-olive border-cs-olive/30"
                       : scoreDiff < 0
-                      ? "bg-rose-500/10 text-rose-400 border-rose-500/30"
-                      : "bg-slate-800 text-slate-400 border-slate-700"
+                      ? "bg-cs-pink-light text-cs-danger border-cs-pink/40"
+                      : "bg-cs-paper text-cs-muted border-cs-border"
                   }`}
                 >
                   {scoreDiff > 0 ? (
@@ -254,224 +281,219 @@ function CompareContent() {
               </div>
 
               {/* Cookies Delta */}
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-cs-cream/40 border border-cs-border flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-mono text-slate-400 uppercase block">
+                  <span className="text-[10px] font-mono text-cs-muted uppercase block font-bold">
                     Cookies Change
                   </span>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span
-                      className={`text-2xl font-black ${
-                        cookiesDiff < 0
-                          ? "text-emerald-400"
-                          : cookiesDiff > 0
-                          ? "text-rose-400"
-                          : "text-slate-300"
-                      }`}
-                    >
+                    <span className="text-2xl sm:text-3xl font-black font-display text-cs-ink">
                       {cookiesDiff > 0 ? `+${cookiesDiff}` : cookiesDiff}
                     </span>
-                    <span className="text-xs font-mono text-slate-400">
+                    <span className="text-xs font-mono text-cs-muted">
                       ({reportA?.metrics?.totalCookies || 0} vs {reportB?.metrics?.totalCookies || 0})
                     </span>
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-800 text-cyan-400 border border-slate-700">
+                <div className="p-2 rounded-xl bg-cs-paper text-cs-denim border border-cs-border">
                   <Cookie className="h-5 w-5" />
                 </div>
               </div>
 
               {/* Trackers Delta */}
-              <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between">
+              <div className="p-4 rounded-xl bg-cs-cream/40 border border-cs-border flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-mono text-slate-400 uppercase block">
+                  <span className="text-[10px] font-mono text-cs-muted uppercase block font-bold">
                     Trackers Change
                   </span>
                   <div className="mt-1 flex items-baseline gap-2">
-                    <span
-                      className={`text-2xl font-black ${
-                        trackersDiff < 0
-                          ? "text-emerald-400"
-                          : trackersDiff > 0
-                          ? "text-rose-400"
-                          : "text-slate-300"
-                      }`}
-                    >
+                    <span className="text-2xl sm:text-3xl font-black font-display text-cs-ink">
                       {trackersDiff > 0 ? `+${trackersDiff}` : trackersDiff}
                     </span>
-                    <span className="text-xs font-mono text-slate-400">
+                    <span className="text-xs font-mono text-cs-muted">
                       ({reportA?.metrics?.totalTrackers || 0} vs {reportB?.metrics?.totalTrackers || 0})
                     </span>
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-slate-800 text-orange-400 border border-slate-700">
+                <div className="p-2 rounded-xl bg-cs-paper text-cs-warning border border-cs-border">
                   <Radio className="h-5 w-5" />
                 </div>
               </div>
+
             </div>
+          </PaperCard>
+
+          {/* Section 2: Side-by-Side Detailed Dossiers */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+            
+            {/* Dossier A Column */}
+            <div className="space-y-4">
+              <div className="flex items-end justify-between px-1">
+                <FolderTab color="denim" size="md">
+                  FILE A: {scanA.website?.domain}
+                </FolderTab>
+                <Link
+                  href={`/scan/${scanA.id}`}
+                  className="font-mono text-xs text-cs-denim hover:underline pb-1 flex items-center gap-1"
+                >
+                  <span>Open Report</span>
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
+
+              <div className="rounded-2xl rounded-tl-none border border-cs-border bg-cs-paper p-6 sm:p-7 shadow-paper text-cs-ink space-y-5">
+                <div className="flex items-center justify-between border-b border-cs-border/80 pb-3">
+                  <div>
+                    <h3 className="text-lg font-bold font-sans text-cs-ink">
+                      {scanA.website?.domain}
+                    </h3>
+                    <p className="text-xs font-mono text-cs-muted">
+                      Audited: {formatDate(scanA.createdAt)}
+                    </p>
+                  </div>
+                  <div className="flex items-baseline gap-1 font-mono">
+                    <span className="text-3xl font-black font-display text-cs-ink">
+                      {scanA.score}
+                    </span>
+                    <span className="text-xs text-cs-muted">/100</span>
+                    <EditorialBadge variant="denim" size="xs" className="ml-1">
+                      {scanA.grade || "B"}
+                    </EditorialBadge>
+                  </div>
+                </div>
+
+                {/* Metrics Breakdown */}
+                <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+                  <div className="p-3 rounded-xl bg-cs-cream/40 border border-cs-border">
+                    <span className="text-cs-muted block text-[10px] uppercase">Total Cookies</span>
+                    <span className="font-bold text-base text-cs-ink">{reportA?.metrics?.totalCookies || 0}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-cs-cream/40 border border-cs-border">
+                    <span className="text-cs-muted block text-[10px] uppercase">3rd-Party Cookies</span>
+                    <span className="font-bold text-base text-cs-warning">{reportA?.metrics?.thirdPartyCookies || 0}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-cs-cream/40 border border-cs-border">
+                    <span className="text-cs-muted block text-[10px] uppercase">Trackers</span>
+                    <span className="font-bold text-base text-cs-danger">{reportA?.metrics?.totalTrackers || 0}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-cs-cream/40 border border-cs-border">
+                    <span className="text-cs-muted block text-[10px] uppercase">Outbound Beacons</span>
+                    <span className="font-bold text-base text-cs-ink">{reportA?.metrics?.thirdPartyRequests || 0}</span>
+                  </div>
+                </div>
+
+                {/* Findings List A */}
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center justify-between text-xs font-mono text-cs-muted border-b border-cs-border/60 pb-1.5">
+                    <span className="uppercase font-bold">Findings ({findingsA.length})</span>
+                  </div>
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    {findingsA.length === 0 ? (
+                      <p className="text-xs text-cs-muted font-sans py-2">No privacy findings recorded.</p>
+                    ) : (
+                      findingsA.map((f) => (
+                        <div
+                          key={`a-${f.id}`}
+                          className="p-3 rounded-xl bg-cs-cream/30 border border-cs-border text-xs font-mono flex items-center justify-between gap-2"
+                        >
+                          <span className="text-cs-ink truncate">{f.title}</span>
+                          <span className="text-cs-danger font-bold shrink-0">
+                            -{f.scoreDeduction} pts
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Dossier B Column */}
+            <div className="space-y-4">
+              <div className="flex items-end justify-between px-1">
+                <FolderTab color="olive" size="md">
+                  FILE B: {scanB.website?.domain}
+                </FolderTab>
+                <Link
+                  href={`/scan/${scanB.id}`}
+                  className="font-mono text-xs text-cs-olive hover:underline pb-1 flex items-center gap-1"
+                >
+                  <span>Open Report</span>
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
+
+              <div className="rounded-2xl rounded-tl-none border border-cs-border bg-cs-paper p-6 sm:p-7 shadow-paper text-cs-ink space-y-5">
+                <div className="flex items-center justify-between border-b border-cs-border/80 pb-3">
+                  <div>
+                    <h3 className="text-lg font-bold font-sans text-cs-ink">
+                      {scanB.website?.domain}
+                    </h3>
+                    <p className="text-xs font-mono text-cs-muted">
+                      Audited: {formatDate(scanB.createdAt)}
+                    </p>
+                  </div>
+                  <div className="flex items-baseline gap-1 font-mono">
+                    <span className="text-3xl font-black font-display text-cs-ink">
+                      {scanB.score}
+                    </span>
+                    <span className="text-xs text-cs-muted">/100</span>
+                    <EditorialBadge variant="olive" size="xs" className="ml-1">
+                      {scanB.grade || "B"}
+                    </EditorialBadge>
+                  </div>
+                </div>
+
+                {/* Metrics Breakdown */}
+                <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+                  <div className="p-3 rounded-xl bg-cs-cream/40 border border-cs-border">
+                    <span className="text-cs-muted block text-[10px] uppercase">Total Cookies</span>
+                    <span className="font-bold text-base text-cs-ink">{reportB?.metrics?.totalCookies || 0}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-cs-cream/40 border border-cs-border">
+                    <span className="text-cs-muted block text-[10px] uppercase">3rd-Party Cookies</span>
+                    <span className="font-bold text-base text-cs-warning">{reportB?.metrics?.thirdPartyCookies || 0}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-cs-cream/40 border border-cs-border">
+                    <span className="text-cs-muted block text-[10px] uppercase">Trackers</span>
+                    <span className="font-bold text-base text-cs-danger">{reportB?.metrics?.totalTrackers || 0}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-cs-cream/40 border border-cs-border">
+                    <span className="text-cs-muted block text-[10px] uppercase">Outbound Beacons</span>
+                    <span className="font-bold text-base text-cs-ink">{reportB?.metrics?.thirdPartyRequests || 0}</span>
+                  </div>
+                </div>
+
+                {/* Findings List B */}
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center justify-between text-xs font-mono text-cs-muted border-b border-cs-border/60 pb-1.5">
+                    <span className="uppercase font-bold">Findings ({findingsB.length})</span>
+                  </div>
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    {findingsB.length === 0 ? (
+                      <p className="text-xs text-cs-muted font-sans py-2">No privacy findings recorded.</p>
+                    ) : (
+                      findingsB.map((f) => (
+                        <div
+                          key={`b-${f.id}`}
+                          className="p-3 rounded-xl bg-cs-cream/30 border border-cs-border text-xs font-mono flex items-center justify-between gap-2"
+                        >
+                          <span className="text-cs-ink truncate">{f.title}</span>
+                          <span className="text-cs-danger font-bold shrink-0">
+                            -{f.scoreDeduction} pts
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
           </div>
-
-          {/* Side-by-Side Detailed Profile Columns */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Column A */}
-            <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-cyber-border pb-3">
-                <div>
-                  <span className="text-[10px] font-mono text-cyan-400 uppercase font-bold">
-                    Scan A (Baseline)
-                  </span>
-                  <h4 className="text-lg font-bold text-slate-100">
-                    {scanA.website?.domain}
-                  </h4>
-                </div>
-                <div className="text-right text-xs font-mono text-slate-400">
-                  {formatDate(scanA.createdAt)}
-                </div>
-              </div>
-
-              {/* Score Pill */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-xs text-slate-400">Transparency Score</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-slate-100">
-                    {scanA.score}/100
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-cyan-400 border border-slate-700">
-                    {scanA.grade}
-                  </span>
-                </div>
-              </div>
-
-              {/* Metrics */}
-              <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Total Cookies:</span>
-                  <span className="font-bold text-slate-200">
-                    {reportA?.metrics?.totalCookies || 0}
-                  </span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">3rd-Party Cookies:</span>
-                  <span className="font-bold text-orange-400">
-                    {reportA?.metrics?.thirdPartyCookies || 0}
-                  </span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Total Trackers:</span>
-                  <span className="font-bold text-rose-400">
-                    {reportA?.metrics?.totalTrackers || 0}
-                  </span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Network Requests:</span>
-                  <span className="font-bold text-slate-200">
-                    {reportA?.metrics?.thirdPartyRequests || 0}
-                  </span>
-                </div>
-              </div>
-
-              {/* Findings */}
-              <div>
-                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider block mb-2">
-                  Findings ({findingsA.length})
-                </span>
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {findingsA.map((f) => (
-                    <div
-                      key={f.id}
-                      className="p-2.5 rounded-lg bg-slate-900/30 border border-slate-800 text-xs font-mono flex items-center justify-between"
-                    >
-                      <span className="text-slate-300 truncate pr-2">{f.title}</span>
-                      <span className="text-rose-400 font-bold shrink-0">
-                        -{f.scoreDeduction} pts
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Column B */}
-            <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-cyber-border pb-3">
-                <div>
-                  <span className="text-[10px] font-mono text-emerald-400 uppercase font-bold">
-                    Scan B (Comparison)
-                  </span>
-                  <h4 className="text-lg font-bold text-slate-100">
-                    {scanB.website?.domain}
-                  </h4>
-                </div>
-                <div className="text-right text-xs font-mono text-slate-400">
-                  {formatDate(scanB.createdAt)}
-                </div>
-              </div>
-
-              {/* Score Pill */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-xs text-slate-400">Transparency Score</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold text-slate-100">
-                    {scanB.score}/100
-                  </span>
-                  <span className="px-2 py-0.5 rounded text-xs font-bold bg-slate-800 text-cyan-400 border border-slate-700">
-                    {scanB.grade}
-                  </span>
-                </div>
-              </div>
-
-              {/* Metrics */}
-              <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Total Cookies:</span>
-                  <span className="font-bold text-slate-200">
-                    {reportB?.metrics?.totalCookies || 0}
-                  </span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">3rd-Party Cookies:</span>
-                  <span className="font-bold text-orange-400">
-                    {reportB?.metrics?.thirdPartyCookies || 0}
-                  </span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Total Trackers:</span>
-                  <span className="font-bold text-rose-400">
-                    {reportB?.metrics?.totalTrackers || 0}
-                  </span>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-900/40 border border-slate-800">
-                  <span className="text-slate-500 block">Network Requests:</span>
-                  <span className="font-bold text-slate-200">
-                    {reportB?.metrics?.thirdPartyRequests || 0}
-                  </span>
-                </div>
-              </div>
-
-              {/* Findings */}
-              <div>
-                <span className="text-xs font-mono text-slate-400 uppercase tracking-wider block mb-2">
-                  Findings ({findingsB.length})
-                </span>
-                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {findingsB.map((f) => (
-                    <div
-                      key={f.id}
-                      className="p-2.5 rounded-lg bg-slate-900/30 border border-slate-800 text-xs font-mono flex items-center justify-between"
-                    >
-                      <span className="text-slate-300 truncate pr-2">{f.title}</span>
-                      <span className="text-rose-400 font-bold shrink-0">
-                        -{f.scoreDeduction} pts
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
+        </div>
       )}
     </div>
   );
@@ -482,8 +504,8 @@ export default function ComparePage() {
     <Suspense
       fallback={
         <div className="min-h-[40vh] flex flex-col items-center justify-center p-8 text-center">
-          <Loader2 className="h-8 w-8 text-cyan-400 animate-spin mb-3" />
-          <p className="text-xs font-mono text-slate-400">Loading comparison module...</p>
+          <Loader2 className="h-8 w-8 text-cs-denim animate-spin mb-3" />
+          <p className="text-xs font-mono text-cs-muted">Loading comparison dossiers...</p>
         </div>
       }
     >

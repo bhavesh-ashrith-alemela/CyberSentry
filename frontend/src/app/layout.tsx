@@ -4,7 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
 export const metadata: Metadata = {
-  title: "CyberSentry | Web Privacy & Tracking Transparency",
+  title: "CyberSentry | Web Privacy & Tracking Transparency Dossier",
   description:
     "An explainable cookie consent and web tracking transparency platform. Audit websites for dark patterns, pre-consent tracking, cookies, and privacy compliance.",
 };
@@ -15,10 +15,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-cyber-dark text-slate-100 flex flex-col min-h-screen selection:bg-cyan-500/30 selection:text-cyan-200">
+    <html lang="en">
+      <body className="bg-cs-cream text-cs-ink flex flex-col min-h-screen selection:bg-cs-denim/20 selection:text-cs-denim antialiased">
         <Navbar />
-        <main className="flex-1 bg-tech-grid">{children}</main>
+        <main className="flex-1 bg-paper-texture">{children}</main>
         <Footer />
       </body>
     </html>

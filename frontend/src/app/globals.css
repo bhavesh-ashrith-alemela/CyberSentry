@@ -1,54 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=JetBrains+Mono:wght@400..700&family=Plus+Jakarta+Sans:ital,wght@0,400..800;1,400..800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #080c14;
-  --foreground: #f8fafc;
+  /* ==========================================================================
+     CyberSentry Design Tokens (Tactile Editorial Privacy Filing System)
+     ========================================================================== */
+
+  /* Base Surfaces */
+  --cs-cream: #F5E4CF;
+  --cs-cream-deep: #EADBCA;
+  --cs-paper: #FFFDF8;
+  --cs-paper-pure: #FFFFFF;
+  --cs-ink: #20252B;
+  --cs-muted: #5F6870;
+  --cs-border: #CFC8BC;
+  --cs-border-dark: #20252B;
+
+  /* Accents */
+  --cs-denim: #275CCC;
+  --cs-denim-light: #EBF1FC;
+  --cs-denim-dark: #1C47A8;
+  --cs-olive: #7E8C4A;
+  --cs-olive-light: #F2F5E8;
+  --cs-olive-dark: #68743B;
+  --cs-pink: #E8B7C2;
+  --cs-pink-light: #FDF2F4;
+  --cs-pink-dark: #D495A3;
+  --cs-sand: #EADBCA;
+
+  /* Functional Status (Tactile Non-Neon) */
+  --cs-safe: #2E7D47;
+  --cs-safe-bg: #E8F5E9;
+  --cs-warning: #C27318;
+  --cs-warning-bg: #FEF3E2;
+  --cs-danger: #C53B4F;
+  --cs-danger-bg: #FCE8EB;
+
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces', 'Newsreader', Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+
+  /* Application Canvas */
+  --background: var(--cs-cream);
+  --foreground: var(--cs-ink);
 }
 
 body {
-  color: var(--foreground);
-  background-color: var(--background);
+  color: var(--cs-ink);
+  background-color: var(--cs-cream);
+  font-family: var(--font-sans);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Custom Scrollbar for cyber aesthetic */
+/* Subtle paper texture */
+.bg-paper-texture {
+  background-color: var(--cs-cream);
+  background-image: radial-gradient(rgba(32, 37, 43, 0.05) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Custom Editorial Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0b1120;
+  background: var(--cs-cream);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e293b;
-  border-radius: 4px;
+  background: #C4BCAC;
+  border-radius: 9999px;
+  border: 1px solid var(--cs-cream);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #AFA492;
 }
 
-/* Subtle tech grid background */
-.bg-tech-grid {
-  background-size: 40px 40px;
-  background-image: 
-    linear-gradient(to right, rgba(30, 41, 59, 0.25) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(30, 41, 59, 0.25) 1px, transparent 1px);
+/* Tactile Paper Shadows */
+.shadow-paper {
+  box-shadow: 0 1px 3px rgba(32, 37, 43, 0.04), 0 4px 12px rgba(32, 37, 43, 0.05);
 }
 
-.glow-cyan {
-  box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.25);
+.shadow-paper-hover {
+  box-shadow: 0 4px 14px rgba(32, 37, 43, 0.08), 0 10px 28px rgba(32, 37, 43, 0.06);
 }
 
-.glow-rose {
-  box-shadow: 0 0 25px -5px rgba(244, 63, 94, 0.25);
+.shadow-folder {
+  box-shadow: 0 2px 0 rgba(32, 37, 43, 0.08), 0 8px 24px rgba(32, 37, 43, 0.07);
 }
 
-.glow-emerald {
-  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.25);
+.shadow-tactile {
+  box-shadow: 0 2px 0 #CFC8BC, 0 4px 10px rgba(32, 37, 43, 0.04);
+}
+
+/* Editorial Italic Display */
+.editorial-italic {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+}
+
+/* Rubber Stamp Badge */
+.rubber-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px dashed currentColor;
+  padding: 0.2rem 0.5rem;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.65rem;
+  border-radius: 4px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

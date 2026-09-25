@@ -4,19 +4,23 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Shield,
+  ArrowLeft,
   Clock,
   RotateCw,
-  ArrowLeft,
-  CheckCircle2,
   ExternalLink,
+  Download,
+  Printer,
+  Shield,
   FileText,
-  Terminal,
-  ChevronDown,
-  ChevronUp,
+  CheckCircle2,
   AlertTriangle,
-  AlertCircle,
-  Check,
+  Cookie,
+  Radio,
+  Sliders,
+  ListOrdered,
+  Layers,
+  ChevronRight,
+  Barcode,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import {
@@ -35,6 +39,15 @@ import { FindingsList } from "@/components/FindingsList";
 import { TrackerChart } from "@/components/TrackerChart";
 import { CookieTable } from "@/components/CookieTable";
 import { StatusStepper } from "@/components/StatusStepper";
+import {
+  PaperCard,
+  FolderTab,
+  FolderCard,
+  EditorialBadge,
+  FileLabel,
+  SectionHeader,
+  StampBadge,
+} from "@/components/ui";
 
 export default function ScanReportPage() {
   const params = useParams();
@@ -49,7 +62,7 @@ export default function ScanReportPage() {
   const [banner, setBanner] = useState<ConsentBanner | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
+  const [activeNav, setActiveNav] = useState("overview");
 
   // Fetch full report data once scan completes
   const fetchCompletedReportData = useCallback(async (id: string) => {
@@ -75,7 +88,7 @@ export default function ScanReportPage() {
     }
   }, []);
 
-  // Poll scan state
+  // Poll scan state every 1.5 seconds until done or failed
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null;
     let isMounted = true;
@@ -108,7 +121,6 @@ export default function ScanReportPage() {
 
     checkStatus();
 
-    // Poll every 1.5 seconds if scan is in progress
     interval = setInterval(() => {
       checkStatus();
     }, 1500);
@@ -134,26 +146,53 @@ export default function ScanReportPage() {
     }
   };
 
+  const handleExportJson = () => {
+    const payload = {
+      scan,
+      report,
+      cookies,
+      trackers,
+      findings,
+      banner,
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const downloadUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = downloadUrl;
+    a.download = `cybersentry-${scan?.website?.domain || "audit"}-${scanId.slice(0, 8)}.json`;
+    a.click();
+    URL.revokeObjectURL(downloadUrl);
+  };
+
+  const handlePrintPdf = () => {
+    if (typeof window !== "undefined") {
+      window.print();
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-        <div className="h-10 w-10 rounded-full border-2 border-cyan-500/20 border-t-cyan-400 animate-spin mb-4" />
-        <p className="text-sm font-mono text-slate-400">Loading scan profile...</p>
+        <div className="h-10 w-10 rounded-full border-2 border-cs-border border-t-cs-denim animate-spin mb-4" />
+        <p className="text-xs font-mono text-cs-muted">Loading audit profile...</p>
       </div>
     );
   }
 
-  // If scan is still running or failed, show the StatusStepper
+  // If scan is still running or failed, show the redesigned StatusStepper
   if (!scan || scan.status !== "completed") {
     return (
-      <div className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto mb-6">
+      <div className="py-10 sm:py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-mono text-slate-400 hover:text-cyan-300 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-mono text-cs-muted hover:text-cs-ink transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Back to URL Submission</span>
+            <span>Back to URL Scanner</span>
           </Link>
         </div>
 
@@ -167,7 +206,7 @@ export default function ScanReportPage() {
     );
   }
 
-  // Scan is COMPLETED -> Render Full Privacy Report
+  // Scan is COMPLETED -> Render Full Privacy Dossier
   const website = scan.website;
   const metrics = report?.metrics || {
     totalCookies: cookies.length,
@@ -181,288 +220,380 @@ export default function ScanReportPage() {
   const bannerFinding = findings.find((f) => f.ruleId === "RULE_BANNER_FOUND");
   const cmpName = bannerFinding?.evidence?.cmpName || null;
 
+  const recommendations =
+    report?.recommendations && report.recommendations.length > 0
+      ? report.recommendations
+      : [
+          "Deploy a standardized Consent Management Platform with balanced choices.",
+          "Ensure third-party advertising scripts remain deferred until affirmative consent is given.",
+          "Add Secure and HttpOnly flags to server-managed persistent cookies.",
+          "Limit advertising and tracker cookie lifespans to 12 months or less.",
+        ];
+
+  const navSections = [
+    { id: "overview", label: "Overview", icon: FileText },
+    { id: "cookies", label: "Cookies", count: metrics.totalCookies, icon: Cookie },
+    { id: "trackers", label: "Trackers", count: metrics.totalTrackers, icon: Radio },
+    { id: "consent", label: "Consent", icon: Sliders },
+    { id: "findings", label: "Findings", count: findings.length, icon: AlertTriangle },
+    { id: "recommendations", label: "Recommendations", count: recommendations.length, icon: ListOrdered },
+  ];
+
+  const scrollToSection = (id: string) => {
+    setActiveNav(id);
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
-    <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
-      {/* Header Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <Link
-              href="/"
-              className="text-xs font-mono text-slate-400 hover:text-cyan-300 transition-colors flex items-center gap-1"
-            >
-              <ArrowLeft className="h-3 w-3" />
-              <span>Audits</span>
-            </Link>
-            <span className="text-slate-600">/</span>
-            <span className="text-xs font-mono text-cyan-400">
-              {website?.domain || "Report"}
+    <div className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8">
+      
+      {/* ====================================================================
+          1. REPORT DOSSIER HEADER
+         ==================================================================== */}
+      <div className="space-y-2">
+        {/* Top Folder Tab Header */}
+        <div className="flex items-end justify-between px-1">
+          <FolderTab color="denim" size="md">
+            PRIVACY DOSSIER
+          </FolderTab>
+          <div className="hidden sm:flex items-center gap-3 pb-1">
+            <span className="font-mono text-xs text-cs-muted">
+              SCAN ID: #{scan.id.slice(0, 8).toUpperCase()}
             </span>
+            <StampBadge color="denim" rotate="none">
+              EVIDENCE VERIFIED
+            </StampBadge>
           </div>
-
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-100 flex items-center gap-3">
-            <span>{metrics.websiteTitle || website?.domain}</span>
-            <a
-              href={website?.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-500 hover:text-slate-300 transition-colors"
-              title="Open Target Website in New Tab"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </a>
-          </h1>
-
-          <p className="text-xs font-mono text-slate-400 mt-1 break-all">
-            Target URL: {website?.url}
-          </p>
         </div>
 
-        {/* Metadata Badges */}
-        <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
-          <div className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 flex items-center gap-1.5">
-            <Clock className="h-3.5 w-3.5 text-slate-400" />
-            <span>{formatDate(scan.createdAt)}</span>
-          </div>
-
-          <div className="px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 flex items-center gap-1.5">
-            <span>Duration:</span>
-            <span className="text-cyan-400 font-bold">
-              {formatDuration(scan.durationMs)}
-            </span>
-          </div>
-
-          <button
-            onClick={handleRetry}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition-colors"
-          >
-            <RotateCw className="h-3.5 w-3.5" />
-            <span>Re-Audit</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Hero Score + Summary Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Score Gauge */}
-        <ScoreGauge
-          score={scan.score ?? 0}
-          grade={scan.grade ?? "F"}
-          className="lg:col-span-1"
-        />
-
-        {/* Executive Summary & Transparency Notice */}
-        <div className="lg:col-span-2 p-6 rounded-2xl bg-cyber-card border border-cyber-border flex flex-col justify-between shadow-xl">
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                <FileText className="h-4 w-4 text-cyan-400" />
-                <span>Executive Privacy Verdict</span>
-              </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                Empirical Audit
-              </span>
-            </div>
-
-            <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-sans">
-              {report?.summary ||
-                `Privacy transparency audit for ${website?.domain}: Score ${scan.score}/100, Grade ${scan.grade}.`}
-            </p>
-
-            {/* Quick Metrics Pills */}
-            <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-[10px] font-mono text-slate-400 uppercase block">
-                  First-Party Cookies
-                </span>
-                <span className="text-lg font-bold text-slate-200">
-                  {(metrics.totalCookies || 0) - (metrics.thirdPartyCookies || 0)}
+        {/* Dossier Card Container */}
+        <div className="rounded-2xl rounded-tl-none border border-cs-border bg-cs-paper p-6 sm:p-8 shadow-paper text-cs-ink space-y-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            
+            {/* Target Identity */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <Link
+                  href="/history"
+                  className="text-xs font-mono text-cs-muted hover:text-cs-denim transition-colors flex items-center gap-1"
+                >
+                  <ArrowLeft className="h-3 w-3" />
+                  <span>Audits</span>
+                </Link>
+                <span className="text-cs-muted/60">/</span>
+                <span className="text-xs font-mono text-cs-denim font-semibold">
+                  {website?.domain || "Report"}
                 </span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800">
-                <span className="text-[10px] font-mono text-slate-400 uppercase block">
-                  Third-Party Cookies
-                </span>
-                <span className="text-lg font-bold text-orange-400">
-                  {metrics.thirdPartyCookies}
-                </span>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800 col-span-2 sm:col-span-1">
-                <span className="text-[10px] font-mono text-slate-400 uppercase block">
-                  Known Trackers
-                </span>
-                <span className="text-lg font-bold text-rose-400">
-                  {metrics.totalTrackers}
-                </span>
-              </div>
-            </div>
-          </div>
 
-          {/* Legal Notice Callout */}
-          <div className="mt-6 pt-4 border-t border-cyber-border text-[11px] font-mono text-slate-500 flex items-start gap-2">
-            <Shield className="h-4 w-4 text-slate-600 shrink-0 mt-0.5" />
-            <span>
-              Disclaimer: Measures observable client-side telemetry and choice transparency. Does not constitute formal statutory legal certification.
-            </span>
-          </div>
-        </div>
-      </div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black font-display text-cs-ink flex items-center gap-3">
+                <span>{metrics.websiteTitle || website?.domain}</span>
+                {website?.url && (
+                  <a
+                    href={website.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-cs-muted hover:text-cs-denim transition-colors"
+                    title="Open website in new tab"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                )}
+              </h1>
 
-      {/* Friendly Traffic-Light Status Cards */}
-      <MetricsGrid
-        metrics={metrics}
-        bannerDetected={bannerDetected}
-        cmpName={cmpName}
-        banner={banner}
-        findings={findings}
-      />
-
-      {/* Plain-English Overview: Key Observations & Actionable Fixes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left: Key Observations in Plain Language */}
-        <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl flex flex-col justify-between">
-          <div>
-            <div className="border-b border-cyber-border/80 pb-4 mb-4">
-              <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-cyan-400" />
-                <span>Key Findings in Plain English</span>
-              </h3>
-              <p className="text-xs text-slate-400 font-mono mt-1">
-                What our audit detected about this site&apos;s privacy practices.
+              <p className="text-xs font-mono text-cs-muted mt-1 break-all">
+                Target URL: {website?.url}
               </p>
+            </div>
+
+            {/* Audit Metadata & Actions */}
+            <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+              <div className="px-3 py-1.5 rounded-lg bg-cs-cream/60 border border-cs-border text-cs-ink flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5 text-cs-muted" />
+                <span>{formatDate(scan.createdAt)}</span>
+              </div>
+
+              <div className="px-3 py-1.5 rounded-lg bg-cs-cream/60 border border-cs-border text-cs-ink flex items-center gap-1.5">
+                <span className="text-cs-muted">Duration:</span>
+                <span className="font-bold text-cs-denim">
+                  {formatDuration(scan.durationMs)}
+                </span>
+              </div>
+
+              {/* Re-Audit Button */}
+              <button
+                onClick={handleRetry}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cs-paper border border-cs-border hover:border-cs-denim hover:text-cs-denim text-cs-ink transition-colors shadow-xs"
+              >
+                <RotateCw className="h-3.5 w-3.5" />
+                <span>Re-Audit</span>
+              </button>
+
+              {/* Export JSON Button */}
+              <button
+                onClick={handleExportJson}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cs-paper border border-cs-border hover:border-cs-denim hover:text-cs-denim text-cs-ink transition-colors shadow-xs"
+              >
+                <Download className="h-3.5 w-3.5" />
+                <span>Export JSON</span>
+              </button>
+
+              {/* Print / PDF Button */}
+              <button
+                onClick={handlePrintPdf}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-cs-denim text-white hover:bg-cs-denim-dark transition-colors shadow-xs font-semibold"
+              >
+                <Printer className="h-3.5 w-3.5" />
+                <span>Print / PDF →</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ====================================================================
+          2. ASYMMETRIC MAIN DOSSIER LAYOUT (Sticky Index + Report Stream)
+         ==================================================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Left Column: Dossier Index / Sidebar (Desktop Only) */}
+        <div className="hidden lg:block lg:col-span-3 sticky top-24 space-y-4">
+          <div className="rounded-2xl border border-cs-border bg-cs-paper p-4 shadow-paper">
+            <div className="border-b border-cs-border/80 pb-2 mb-3">
+              <FileLabel code="DOSSIER INDEX" variant="muted" />
+            </div>
+
+            <nav className="space-y-1">
+              {navSections.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeNav === item.id;
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollToSection(item.id)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-mono transition-all text-left ${
+                      isActive
+                        ? "bg-cs-denim-light text-cs-denim font-bold border-l-3 border-cs-denim"
+                        : "text-cs-muted hover:text-cs-ink hover:bg-cs-cream/50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon className="h-3.5 w-3.5 shrink-0" />
+                      <span>{item.label}</span>
+                    </div>
+
+                    {item.count !== undefined && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-cs-border/50 text-cs-ink">
+                        {item.count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+
+            <div className="mt-6 pt-4 border-t border-cs-border/60 text-[10px] font-mono text-cs-muted/80 leading-relaxed">
+              Empirical privacy evaluation. Observable telemetry recorded live.
+            </div>
+          </div>
+        </div>
+
+        {/* Right Main Column: Full Report Feed */}
+        <div className="lg:col-span-9 space-y-10">
+          
+          {/* Mobile Horizontal Scrollable Index Bar */}
+          <div className="block lg:hidden overflow-x-auto pb-1 -mx-4 px-4 scrollbar-none">
+            <div className="flex items-center gap-1.5 w-max">
+              {navSections.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-mono whitespace-nowrap border select-none transition-colors ${
+                    activeNav === item.id
+                      ? "bg-cs-denim text-white border-cs-denim font-bold"
+                      : "bg-cs-paper border-cs-border text-cs-muted"
+                  }`}
+                >
+                  {item.label}
+                  {item.count !== undefined && ` (${item.count})`}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 1: Score & Executive Verdict */}
+          <section id="overview" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              {/* Score Gauge */}
+              <div className="md:col-span-5">
+                <ScoreGauge
+                  score={scan.score ?? 0}
+                  grade={scan.grade ?? "F"}
+                  className="h-full"
+                />
+              </div>
+
+              {/* Executive Privacy Verdict Box */}
+              <div className="md:col-span-7 rounded-2xl border border-cs-border bg-cs-paper p-6 sm:p-7 shadow-paper text-cs-ink flex flex-col justify-between space-y-4">
+                <div>
+                  <div className="flex items-center justify-between border-b border-cs-border/70 pb-3 mb-3">
+                    <FileLabel code="EXECUTIVE_VERDICT" variant="muted" />
+                    <EditorialBadge variant="denim" size="xs">
+                      Empirical Telemetry
+                    </EditorialBadge>
+                  </div>
+
+                  <h3 className="text-xl font-bold font-display text-cs-ink">
+                    Privacy Transparency Verdict
+                  </h3>
+
+                  <p className="mt-3 text-sm text-cs-ink leading-relaxed font-sans">
+                    {report?.summary ||
+                      `Privacy transparency audit for ${website?.domain}: Score ${scan.score}/100, Grade ${scan.grade}. Telemetry indicates observable tracker volume and consent choice balance.`}
+                  </p>
+
+                  {/* High-Level Counter Badges */}
+                  <div className="mt-5 grid grid-cols-3 gap-2.5 text-center font-mono">
+                    <div className="p-2.5 rounded-xl bg-cs-cream/50 border border-cs-border">
+                      <span className="text-[10px] text-cs-muted uppercase block">
+                        First-Party
+                      </span>
+                      <span className="text-lg font-bold text-cs-ink">
+                        {Math.max(0, (metrics.totalCookies || 0) - (metrics.thirdPartyCookies || 0))}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-cs-cream/50 border border-cs-border">
+                      <span className="text-[10px] text-cs-muted uppercase block">
+                        3rd-Party
+                      </span>
+                      <span className="text-lg font-bold text-cs-warning">
+                        {metrics.thirdPartyCookies}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-cs-cream/50 border border-cs-border">
+                      <span className="text-[10px] text-cs-muted uppercase block">
+                        Trackers
+                      </span>
+                      <span className="text-lg font-bold text-cs-danger">
+                        {metrics.totalTrackers}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-cs-border/60 text-[11px] font-sans text-cs-muted flex items-start gap-2">
+                  <Shield className="h-4 w-4 text-cs-muted shrink-0 mt-0.5" />
+                  <span>
+                    Disclaimer: This assessment measures observable client-side telemetry and banner choice friction. It does not constitute a formal legal audit or GDPR compliance certification.
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Summary Metrics Grid */}
+            <MetricsGrid
+              metrics={metrics}
+              bannerDetected={bannerDetected}
+              cmpName={cmpName}
+              banner={banner}
+              findings={findings}
+            />
+          </section>
+
+          {/* Section 2: Tracker Directory */}
+          <section id="trackers">
+            <TrackerChart requests={trackers} />
+          </section>
+
+          {/* Section 3: Consent Audit */}
+          <section id="consent">
+            <ConsentCard banner={banner} metrics={metrics} />
+          </section>
+
+          {/* Section 4: Evidence-Based Findings */}
+          <section id="findings">
+            <FindingsList findings={findings} />
+          </section>
+
+          {/* Section 5: Actionable Recommendations */}
+          <section id="recommendations" className="rounded-2xl border border-cs-border bg-cs-paper p-6 sm:p-7 shadow-paper text-cs-ink space-y-5">
+            <div className="flex items-center justify-between border-b border-cs-border/80 pb-4">
+              <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <FileLabel code="REMEDIATION_GUIDE" variant="muted" />
+                  <EditorialBadge variant="olive" size="xs">
+                    {recommendations.length} Action Items
+                  </EditorialBadge>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-bold font-display text-cs-ink">
+                  Actionable Recommendations
+                </h3>
+                <p className="text-xs text-cs-muted font-sans mt-0.5">
+                  Remediation steps tied directly to the observed score deductions and tracking behaviors.
+                </p>
+              </div>
             </div>
 
             <div className="space-y-3">
-              {findings.length === 0 ? (
-                <div className="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-xs text-emerald-300 flex items-center gap-2">
-                  <Check className="h-4 w-4 text-emerald-400" />
-                  <span>No privacy violations found! This site respects visitor choice.</span>
-                </div>
-              ) : (
-                findings.slice(0, 5).map((f, i) => (
-                  <div
-                    key={i}
-                    className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex items-start gap-3"
-                  >
-                    <div className="mt-0.5">
-                      {f.severity === "critical" || f.severity === "high" ? (
-                        <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
-                      ) : f.severity === "medium" ? (
-                        <AlertCircle className="h-4 w-4 text-amber-400 shrink-0" />
-                      ) : (
-                        <CheckCircle2 className="h-4 w-4 text-cyan-400 shrink-0" />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-xs sm:text-sm font-semibold text-slate-200">
-                        {f.title}
-                      </h4>
-                      <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
-                        {f.description}
-                      </p>
-                    </div>
-                    {f.scoreDeduction > 0 && (
-                      <span className="text-[11px] font-mono text-rose-400 font-bold px-2 py-0.5 rounded bg-rose-500/10 border border-rose-500/20 shrink-0">
-                        -{f.scoreDeduction}
-                      </span>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-cyber-border text-[11px] font-mono text-slate-500 text-center">
-            {findings.length > 5
-              ? `Showing top 5 of ${findings.length} findings. Expand below for complete technical logs.`
-              : "All findings summarized above."}
-          </div>
-        </div>
-
-        {/* Right: Actionable Fixes & Recommendations */}
-        <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl flex flex-col justify-between">
-          <div>
-            <div className="border-b border-cyber-border/80 pb-4 mb-4">
-              <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                <span>What Should Be Done</span>
-              </h3>
-              <p className="text-xs text-slate-400 font-mono mt-1">
-                Clear action steps to elevate privacy transparency and compliance.
-              </p>
-            </div>
-
-            <ul className="space-y-3">
-              {(report?.recommendations || [
-                "Deploy a standardized Consent Management Platform.",
-                "Ensure all marketing pixels remain deferred until affirmative consent is given.",
-                "Add Secure and HttpOnly flags to server-managed cookies.",
-              ]).map((rec, i) => (
-                <li
-                  key={i}
-                  className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 flex items-start gap-2.5"
+              {recommendations.map((rec, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 rounded-xl border border-cs-border bg-cs-paper hover:bg-cs-cream/30 transition-colors flex items-start gap-3.5 text-xs font-sans text-cs-ink"
                 >
-                  <span className="h-5 w-5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono flex items-center justify-center shrink-0 mt-0.5">
-                    {i + 1}
-                  </span>
-                  <span className="leading-relaxed">{rec}</span>
-                </li>
+                  <div className="h-6 w-6 rounded-full bg-cs-olive-light text-cs-olive border border-cs-olive/30 font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                    {idx + 1}
+                  </div>
+                  <div className="flex-1 leading-relaxed">
+                    {rec}
+                  </div>
+                </div>
               ))}
-            </ul>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-cyber-border text-center text-[11px] font-mono text-slate-500">
-            Applying these remediations directly mitigates the identified score deductions.
-          </div>
-        </div>
-      </div>
-
-      {/* Collapsible Section: Detailed Technical Audit & Developer Logs */}
-      <div className="pt-6 border-t border-cyber-border">
-        <button
-          onClick={() => setShowTechnicalDetails(!showTechnicalDetails)}
-          className="w-full flex items-center justify-between p-5 rounded-2xl bg-cyber-card border border-cyber-border hover:border-cyan-500/40 transition-all text-left group shadow-lg"
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:scale-105 transition-transform">
-              <Terminal className="h-5 w-5" />
             </div>
+
+            <div className="pt-3 border-t border-cs-border/60 text-center text-xs font-mono text-cs-muted">
+              Applying these changes directly addresses observed privacy friction and improves site transparency.
+            </div>
+          </section>
+
+          {/* Section 6: Stored Cookie Ledger */}
+          <section id="cookies">
+            <CookieTable cookies={cookies} />
+          </section>
+
+          {/* Bottom Export Bar */}
+          <div className="p-6 rounded-2xl border border-cs-border bg-cs-cream/40 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h4 className="text-sm sm:text-base font-bold text-slate-100 flex items-center gap-2">
-                <span>Detailed Technical Audit & Developer Logs</span>
-                <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-400 border border-slate-700">
-                  Examiners & Engineers
-                </span>
+              <h4 className="text-sm font-bold text-cs-ink font-sans">
+                Export & Archive Audit Dossier
               </h4>
-              <p className="text-xs text-slate-400 font-mono mt-0.5">
-                {showTechnicalDetails
-                  ? "Click to collapse raw cookie tables, network distribution charts, and JSON evidence"
-                  : "Click to inspect complete cookie ledger, request distribution charts, and raw JSON evidence"}
+              <p className="text-xs text-cs-muted font-mono mt-0.5">
+                Download verified audit JSON artifact or print full dossier report.
               </p>
             </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleExportJson}
+                className="px-4 py-2 rounded-xl text-xs font-mono font-semibold bg-cs-paper border border-cs-border hover:border-cs-denim text-cs-ink transition-colors shadow-xs"
+              >
+                EXPORT JSON →
+              </button>
+              <button
+                onClick={handlePrintPdf}
+                className="px-4 py-2 rounded-xl text-xs font-mono font-semibold bg-cs-denim text-white hover:bg-cs-denim-dark transition-colors shadow-xs"
+              >
+                PRINT / PDF →
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-2 text-xs font-mono text-cyan-400 bg-cyan-500/10 px-3.5 py-1.5 rounded-lg border border-cyan-500/20 shrink-0">
-            <span>{showTechnicalDetails ? "Hide Details" : "Show Details"}</span>
-            {showTechnicalDetails ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-          </div>
-        </button>
 
-        {/* Expanded Technical Content */}
-        {showTechnicalDetails && (
-          <div className="mt-8 space-y-8">
-            {/* Consent Banner & Dark Pattern Heuristics Card */}
-            <ConsentCard banner={banner} metrics={metrics} />
-
-            {/* Outbound Network Request Distribution Chart */}
-            <TrackerChart requests={trackers} />
-
-            {/* Evidence-based Findings List with Rule Codes and JSON Payloads */}
-            <FindingsList findings={findings} />
-
-            {/* Stored Cookie Ledger Table */}
-            <CookieTable cookies={cookies} />
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

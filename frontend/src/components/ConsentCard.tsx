@@ -1,5 +1,8 @@
-import { CheckCircle2, XCircle, AlertCircle, Sparkles, MousePointerClick, Sliders } from "lucide-react";
+"use client";
+
+import { Check, X, Sliders, MousePointerClick, AlertCircle } from "lucide-react";
 import { ConsentBanner, ReportMetrics } from "@/lib/types";
+import { FileLabel, EditorialBadge, PaperCard } from "@/components/ui";
 
 interface ConsentCardProps {
   banner?: ConsentBanner | null;
@@ -16,127 +19,110 @@ export function ConsentCard({ banner, metrics }: ConsentCardProps) {
   const consentTest = metrics.consentTestSummary || raw?.consentTest;
 
   // Dark pattern analysis
-  const isAsymmetric = hasAccept && !hasReject && hasSettings;
+  const isAsymmetric = hasAccept && !hasReject;
   const optionCount = raw?.optionIndicators?.count ?? 0;
 
+  const checklistItems = [
+    {
+      label: "Consent Banner Detected",
+      status: isDetected ? "YES" : "NO",
+      subtext: isDetected ? (cmpName || "Generic Consent UI") : "No consent modal detected",
+      positive: isDetected,
+    },
+    {
+      label: "Affirmative 'Accept' Option",
+      status: hasAccept ? "Detected" : "Missing",
+      subtext: hasAccept ? `Label: "${raw?.acceptButtonText || "Accept All"}"` : "No explicit accept button",
+      positive: hasAccept,
+    },
+    {
+      label: "Single-Click 'Reject' Option",
+      status: hasReject ? "Detected" : "Missing on Layer 1",
+      subtext: hasReject ? `Label: "${raw?.rejectButtonText || "Reject All"}"` : "Cannot refuse with 1 click",
+      positive: hasReject,
+    },
+    {
+      label: "Granular Settings / Preferences",
+      status: hasSettings ? "Detected" : "None",
+      subtext: hasSettings ? `Label: "${raw?.settingsButtonText || "Manage"}"` : "No secondary options modal",
+      positive: hasSettings,
+    },
+  ];
+
   return (
-    <div className="p-6 rounded-2xl bg-cyber-card border border-cyber-border shadow-xl">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyber-border/80 pb-4">
+    <div className="rounded-2xl border border-cs-border bg-cs-paper p-6 sm:p-7 shadow-paper text-cs-ink space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-cs-border/80 pb-4">
         <div>
-          <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <span>Consent Management & Banner Audit</span>
-            {isDetected ? (
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                CMP: {cmpName}
-              </span>
-            ) : (
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                No Banner Detected
-              </span>
-            )}
+          <div className="flex items-center gap-2 mb-1.5">
+            <FileLabel code="CHOICE_ARCHITECTURE" variant="muted" />
+            <EditorialBadge
+              variant={isDetected ? (isAsymmetric ? "warning" : "safe") : "danger"}
+              size="xs"
+            >
+              {isDetected ? (isAsymmetric ? "Asymmetry Detected" : "Balanced Banner") : "No Notice"}
+            </EditorialBadge>
+          </div>
+          <h3 className="text-xl sm:text-2xl font-bold font-display text-cs-ink">
+            Consent & Choice Audit
           </h3>
-          <p className="text-xs text-slate-400 font-mono mt-1">
-            Evaluates banner presence, choice asymmetry, and controlled post-consent deltas.
+          <p className="text-xs text-cs-muted font-sans mt-0.5">
+            Evaluates presence of affirmative consent triggers, equal choice balance, and post-consent deltas.
           </p>
         </div>
 
-        <div className="text-xs font-mono text-slate-400">
+        <div className="text-right font-mono text-xs text-cs-muted">
           Visibility:{" "}
-          <span className="font-semibold text-slate-200 uppercase">
-            {raw?.visibility || (isDetected ? "visible" : "unobserved")}
+          <span className="font-bold text-cs-ink uppercase">
+            {raw?.visibility || (isDetected ? "Visible on load" : "Unobserved")}
           </span>
         </div>
       </div>
 
-      {/* Button Choice Indicators */}
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Accept Button */}
-        <div
-          className={`p-4 rounded-xl border ${
-            hasAccept
-              ? "bg-slate-900/60 border-emerald-500/30 text-emerald-400"
-              : "bg-slate-900/30 border-slate-800 text-slate-500"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
-              Accept Button
-            </span>
-            {hasAccept ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            ) : (
-              <XCircle className="h-4 w-4 text-slate-500" />
-            )}
-          </div>
-          <div className="mt-2 font-semibold text-slate-200">
-            {hasAccept ? `"${raw?.acceptButtonText || "Accept All"}"` : "Not Detected"}
-          </div>
-          <p className="mt-1 text-[11px] text-slate-400">
-            {hasAccept ? "Affirmative consent trigger present." : "No explicit accept button."}
-          </p>
-        </div>
+      {/* Evidence Checklist Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {checklistItems.map((item, idx) => (
+          <div
+            key={idx}
+            className={`p-4 rounded-xl border ${
+              item.positive
+                ? "bg-cs-paper border-cs-border"
+                : "bg-cs-pink-light/40 border-cs-pink/40"
+            }`}
+          >
+            <div className="flex items-center justify-between text-[11px] font-mono uppercase text-cs-muted mb-2">
+              <span>{item.label}</span>
+              {item.positive ? (
+                <div className="h-4 w-4 rounded-full bg-cs-olive-light text-cs-olive border border-cs-olive/30 flex items-center justify-center">
+                  <Check className="h-2.5 w-2.5 stroke-[3]" />
+                </div>
+              ) : (
+                <div className="h-4 w-4 rounded-full bg-cs-pink-light text-cs-danger border border-cs-pink/40 flex items-center justify-center">
+                  <X className="h-2.5 w-2.5 stroke-[3]" />
+                </div>
+              )}
+            </div>
 
-        {/* Reject Button */}
-        <div
-          className={`p-4 rounded-xl border ${
-            hasReject
-              ? "bg-slate-900/60 border-emerald-500/30 text-emerald-400"
-              : "bg-rose-950/20 border-rose-500/40 text-rose-400"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
-              Reject Button
-            </span>
-            {hasReject ? (
-              <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-            ) : (
-              <XCircle className="h-4 w-4 text-rose-400" />
-            )}
+            <div className="font-bold text-sm text-cs-ink font-sans">
+              {item.status}
+            </div>
+            <p className="text-[11px] font-mono text-cs-muted mt-1 truncate">
+              {item.subtext}
+            </p>
           </div>
-          <div className="mt-2 font-semibold text-slate-200">
-            {hasReject ? `"${raw?.rejectButtonText || "Reject All"}"` : "Missing on Primary View"}
-          </div>
-          <p className="mt-1 text-[11px] text-slate-400">
-            {hasReject
-              ? "1-click refusal available to users."
-              : "Users cannot decline with equal ease."}
-          </p>
-        </div>
-
-        {/* Settings / Preferences Button */}
-        <div
-          className={`p-4 rounded-xl border ${
-            hasSettings
-              ? "bg-slate-900/60 border-cyan-500/30 text-cyan-400"
-              : "bg-slate-900/30 border-slate-800 text-slate-500"
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-400">
-              Preferences Menu
-            </span>
-            <Sliders className="h-4 w-4" />
-          </div>
-          <div className="mt-2 font-semibold text-slate-200">
-            {hasSettings ? `"${raw?.settingsButtonText || "Preferences"}"` : "None"}
-          </div>
-          <p className="mt-1 text-[11px] text-slate-400">
-            {hasSettings ? "Secondary settings modal provided." : "No granular settings button."}
-          </p>
-        </div>
+        ))}
       </div>
 
-      {/* Dark Pattern Alert Callout (If Asymmetric) */}
+      {/* Asymmetric Choice Architecture Callout */}
       {isAsymmetric && (
-        <div className="mt-4 p-4 rounded-xl bg-amber-950/30 border border-amber-500/40 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+        <div className="p-4 rounded-xl bg-cs-warning-bg/60 border border-cs-warning/30 flex items-start gap-3">
+          <AlertCircle className="h-5 w-5 text-cs-warning shrink-0 mt-0.5" />
           <div>
-            <h4 className="text-sm font-semibold text-amber-300">
-              Dark Pattern Detected: Asymmetric Choice Architecture
+            <h4 className="text-sm font-bold text-cs-ink font-sans">
+              Choice Friction Observed: Asymmetric Architecture
             </h4>
-            <p className="mt-1 text-xs text-amber-200/80 leading-relaxed">
-              The consent banner allows visitors to accept all tracking with a single click, but forces users wishing to decline into a secondary &quot;Settings&quot; menu. Under EDPB and CNIL guidelines, rejecting cookies must be as easy as accepting them.
+            <p className="mt-1 text-xs text-cs-muted leading-relaxed font-sans">
+              The consent banner allows visitors to accept all tracking with a single click, but conceals or excludes an equally prominent &quot;Reject All&quot; button on layer 1, requiring visitors wishing to decline into secondary preferences menus.
             </p>
           </div>
         </div>
@@ -144,43 +130,36 @@ export function ConsentCard({ banner, metrics }: ConsentCardProps) {
 
       {/* Controlled Interaction Testing Result */}
       {consentTest && (
-        <div className="mt-6 p-4 rounded-xl bg-slate-900/80 border border-cyber-border">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-mono uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-              <MousePointerClick className="h-3.5 w-3.5 text-cyber-accent" />
+        <div className="p-4 rounded-xl bg-cs-cream/50 border border-cs-border space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-cs-ink flex items-center gap-1.5">
+              <MousePointerClick className="h-4 w-4 text-cs-denim" />
               <span>Controlled Interaction Test</span>
             </span>
-            <span
-              className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                consentTest.tested
-                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                  : "bg-slate-800 text-slate-400 border-slate-700"
-              }`}
+            <EditorialBadge
+              variant={consentTest.tested ? "safe" : "default"}
+              size="xs"
             >
               {consentTest.tested ? "Interaction Tested" : "Untested"}
-            </span>
+            </EditorialBadge>
           </div>
 
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-cs-muted leading-relaxed font-sans">
             {consentTest.details ||
               (consentTest.tested
-                ? `Automated click executed on "${consentTest.buttonText || "Accept"}". Recorded ${consentTest.observedNewCookies} additional cookies and ${consentTest.observedNewRequests} telemetry calls post-consent.`
+                ? `Automated click dispatched on "${consentTest.buttonText || "Accept"}". Observed ${consentTest.observedNewCookies} additional cookies deposited and ${consentTest.observedNewRequests} additional network requests after consent.`
                 : "No unambiguous consent button could be verified for interaction testing.")}
           </p>
 
           {consentTest.tested && (
-            <div className="mt-3 flex items-center gap-6 text-xs font-mono">
+            <div className="flex items-center gap-6 pt-2 text-xs font-mono">
               <div>
-                <span className="text-slate-500">Post-Consent Cookies: </span>
-                <span className="font-bold text-slate-200">
-                  +{consentTest.observedNewCookies}
-                </span>
+                <span className="text-cs-muted">Post-Consent Cookies: </span>
+                <span className="font-bold text-cs-ink">+{consentTest.observedNewCookies}</span>
               </div>
               <div>
-                <span className="text-slate-500">Telemetry Beacons: </span>
-                <span className="font-bold text-slate-200">
-                  +{consentTest.observedNewRequests}
-                </span>
+                <span className="text-cs-muted">Post-Consent Requests: </span>
+                <span className="font-bold text-cs-ink">+{consentTest.observedNewRequests}</span>
               </div>
             </div>
           )}

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Shield, Activity, History, GitCompare, ExternalLink } from "lucide-react";
+import { Folder, History, GitCompare, Activity } from "lucide-react";
 import { api } from "@/lib/api";
 
 export function Navbar() {
@@ -29,37 +29,31 @@ export function Navbar() {
   }, []);
 
   const navLinks = [
-    { href: "/", label: "New Scan", icon: Activity },
-    { href: "/history", label: "Scan History", icon: History },
+    { href: "/", label: "Scan", icon: Activity },
+    { href: "/history", label: "Reports", icon: History },
     { href: "/compare", label: "Compare", icon: GitCompare },
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-cyber-border/80 bg-cyber-dark/85 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-cs-border bg-cs-cream/90 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative flex h-10 w-10 items-center justify-center rounded-lg bg-cyber-card border border-cyan-500/30 text-cyber-accent group-hover:border-cyan-400/60 transition-colors">
-            <Shield className="h-5 w-5 transition-transform group-hover:scale-110" />
-            <div className="absolute inset-0 rounded-lg bg-cyan-500/10 blur-sm -z-10" />
+        {/* Brand / Logo */}
+        <Link href="/" className="flex items-center gap-2.5 group select-none">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-cs-denim text-white shadow-sm group-hover:scale-105 transition-transform duration-200">
+            <Folder className="h-5 w-5 fill-white/20 stroke-white" />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-lg tracking-wider text-slate-100">
-                CYBER<span className="text-cyber-accent">SENTRY</span>
-              </span>
-              <span className="rounded bg-cyan-500/10 px-1.5 py-0.5 text-[10px] font-mono text-cyan-400 border border-cyan-500/20">
-                v1.0
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 font-mono hidden sm:block">
-              Web Tracking Transparency Platform
-            </p>
+          <div className="flex items-baseline gap-1.5">
+            <span className="font-bold text-xl tracking-tight text-cs-ink font-sans">
+              CyberSentry
+            </span>
+            <span className="hidden sm:inline-block rounded-md border border-cs-border bg-cs-paper px-1.5 py-0.2 text-[10px] font-mono text-cs-muted">
+              v1.0
+            </span>
           </div>
         </Link>
 
         {/* Navigation Links */}
-        <nav className="flex items-center gap-1 sm:gap-2">
+        <nav className="flex items-center gap-1 sm:gap-1.5">
           {navLinks.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -69,28 +63,32 @@ export function Navbar() {
                 href={item.href}
                 title={item.label}
                 aria-label={item.label}
-                className={`flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all ${
                   isActive
-                    ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 shadow-sm"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                    ? "bg-cs-paper text-cs-denim font-semibold border border-cs-border shadow-xs"
+                    : "text-cs-muted hover:text-cs-ink hover:bg-cs-cream-deep/50"
                 }`}
               >
-                <Icon className="h-4 w-4 shrink-0" />
-                <span className="hidden sm:inline">{item.label}</span>
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        {/* Backend Connectivity Status */}
-        <div className="hidden md:flex items-center gap-2 text-xs font-mono">
+        {/* Right Tagline & Backend Health Indicator */}
+        <div className="flex items-center gap-4">
+          <span className="text-[10px] font-mono tracking-widest uppercase text-cs-muted/80 hidden xl:block select-none">
+            MORE TRANSPARENCY. A SAFER INTERNET.
+          </span>
+
           <div
-            className={`flex items-center gap-2 px-2.5 py-1 rounded-full border ${
+            className={`flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs font-mono shadow-xs select-none transition-colors ${
               backendOnline === true
-                ? "bg-emerald-950/40 text-emerald-400 border-emerald-500/30"
+                ? "bg-cs-paper text-cs-safe border-cs-border"
                 : backendOnline === false
-                ? "bg-rose-950/40 text-rose-400 border-rose-500/30"
-                : "bg-slate-900 text-slate-400 border-slate-700"
+                ? "bg-cs-pink-light text-cs-danger border-cs-pink"
+                : "bg-cs-paper text-cs-muted border-cs-border"
             }`}
             title={
               backendOnline === true
@@ -101,15 +99,15 @@ export function Navbar() {
             }
           >
             <span
-              className={`h-2 w-2 rounded-full ${
+              className={`h-2 w-2 rounded-full shrink-0 ${
                 backendOnline === true
-                  ? "bg-emerald-400 animate-pulse"
+                  ? "bg-cs-safe animate-pulse"
                   : backendOnline === false
-                  ? "bg-rose-400"
-                  : "bg-slate-400"
+                  ? "bg-cs-danger"
+                  : "bg-cs-muted"
               }`}
             />
-            <span>
+            <span className="hidden sm:inline">
               {backendOnline === true
                 ? "API Connected"
                 : backendOnline === false
