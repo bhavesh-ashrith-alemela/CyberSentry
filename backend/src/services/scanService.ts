@@ -4,12 +4,30 @@ import { scanRepository } from "../repositories/scanRepository.js";
 import { trackerRepository } from "../repositories/trackerRepository.js";
 import { runScan } from "../scanner/scannerEngine.js";
 import { analyzeScan } from "../analyzer/scorer.js";
+import { env } from "../config/env.js";
 
 export class ScanService {
+  private activeScans = 0;
+
+  /**
+   * Returns current active scan count
+   */
+  getActiveScanCount(): number {
+    return this.activeScans;
+  }
   /**
    * Validates URL and creates initial scan record in 'pending' state
    */
   async createScanJob(rawUrl: string) {
+    // 0. Concurrency Check (Protects against OOM crashes on low-memory cloud hosts)
+    if (this.activeScans >= env.MAX_CONCURRENT_SCANS) {
+      const err = new Error(
+        "Scanner is currently processing another audit. Please wait a moment and try again."
+      );
+      (err as any).statusCode = 429;
+      throw err;
+    }
+
     // 1. SSRF Safety Validation
     const safetyCheck = await validateUrlSafety(rawUrl);
     if (!safetyCheck.safe) {
@@ -44,6 +62,7 @@ export class ScanService {
     hostname: string,
     websiteId: string
   ) {
+    this.activeScans++;
     try {
       // 1. Update status to 'scanning'
       await scanRepository.updateScanStatus(scanId, "scanning");
@@ -86,6 +105,8 @@ export class ScanService {
         errorMessage: scanError.message || "Unknown error during website crawl.",
       });
       throw scanError;
+    } finally {
+      this.activeScans = Math.max(0, this.activeScans - 1);
     }
   }
 

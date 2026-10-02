@@ -1,4 +1,4 @@
-import { getBrowser } from "./browser.js";
+import { getBrowser, notifyScanComplete } from "./browser.js";
 import { attachRedirectGuard } from "./redirectGuard.js";
 import { extractMetadata, WebsiteMetadata } from "./metadataExtractor.js";
 import { detectConsentBanner, DetailedBannerInfo } from "./bannerDetector.js";
@@ -122,5 +122,6 @@ export async function runScan(
     // Crucial: Always close page and context to avoid resource leaks in low-memory environments
     await page.close().catch(() => {});
     await context.close().catch(() => {});
+    notifyScanComplete();
   }
 }

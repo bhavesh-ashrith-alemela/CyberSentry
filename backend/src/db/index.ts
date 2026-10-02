@@ -22,9 +22,14 @@ const requiresSsl =
 export const pool = new Pool({
   connectionString: env.DATABASE_URL,
   ssl: requiresSsl ? { rejectUnauthorized: false } : false,
-  max: 10,
+  max: 5,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
+});
+
+// Prevent unhandled idle client errors from terminating the Node.js process
+pool.on("error", (err) => {
+  console.error("[PostgreSQL Pool Error (Handled)]:", err.message);
 });
 
 export const db = drizzle(pool, { schema });

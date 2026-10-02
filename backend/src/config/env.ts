@@ -15,6 +15,7 @@ const envSchema = z.object({
     .min(10, "DATABASE_URL must be a valid PostgreSQL connection string."),
   PLAYWRIGHT_HEADLESS: z.string().default("true").transform((v) => v.toLowerCase() !== "false"),
   SCAN_TIMEOUT_MS: z.string().default("30000").transform((v) => parseInt(v, 10)),
+  MAX_CONCURRENT_SCANS: z.string().default("1").transform((v) => parseInt(v, 10)),
 });
 
 export const env = envSchema.parse(process.env);

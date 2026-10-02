@@ -6,6 +6,7 @@ import { requestLogger } from "./middlewares/requestLogger.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { testConnection, pool } from "./db/index.js";
 import { closeBrowser } from "./scanner/browser.js";
+import { checkLiveness, checkReadiness } from "./controllers/healthController.js";
 
 const app = express();
 
@@ -27,7 +28,7 @@ app.use(
       ) {
         return callback(null, true);
       }
-      return callback(new Error(`CORS policy blocked access from origin: ${origin}`));
+      return callback(null, false);
     },
     methods: ["GET", "POST", "OPTIONS", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -37,6 +38,20 @@ app.use(
 
 // Request logging middleware
 app.use(requestLogger);
+
+// Root Ping & Direct Health Probes (for cloud hosting probes & uptime monitors)
+app.get("/", (_req, res) => {
+  res.json({
+    status: "ok",
+    service: "CyberSentry Backend API",
+    uptimeSeconds: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get("/health/live", checkLiveness);
+app.get("/health/ready", checkReadiness);
+app.get("/health", checkReadiness);
 
 // Mount API endpoints
 app.use("/api", apiRouter);
@@ -98,5 +113,27 @@ async function shutdown(signal: string) {
 
 process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
+
+// Fatal process-level handlers: log, perform emergency cleanup, and exit with code 1
+// This allows container supervisors (Render, Docker, Kubernetes) to restart the container cleanly
+process.on("unhandledRejection", (reason: any) => {
+  console.error("[FATAL] Unhandled Promise Rejection:", reason?.stack || reason);
+  try {
+    if (server) server.close();
+    closeBrowser().catch(() => {});
+    pool.end().catch(() => {});
+  } catch {}
+  process.exit(1);
+});
+
+process.on("uncaughtException", (err: Error) => {
+  console.error("[FATAL] Uncaught Exception encountered. Terminating process for orchestrator recovery:", err.message, err.stack);
+  try {
+    if (server) server.close();
+    closeBrowser().catch(() => {});
+    pool.end().catch(() => {});
+  } catch {}
+  process.exit(1);
+});
 
 export default app;
