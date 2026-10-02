@@ -272,9 +272,16 @@ export class ScanRepository {
       .from(scans)
       .innerJoin(websites, eq(scans.websiteId, websites.id))
       .where(eq(scans.id, id))
-      .limit(1);
-
-    return res.length > 0 ? res[0] : null;
+    if (res.length === 0) return null;
+    const s = res[0];
+    return {
+      ...s,
+      website: {
+        id: s.websiteId,
+        url: s.url,
+        domain: s.targetDomain,
+      },
+    };
   }
 
   /**
@@ -417,8 +424,17 @@ export class ScanRepository {
     const total = countResult[0]?.count || 0;
     const totalPages = Math.ceil(total / limit);
 
+    const formattedItems = items.map((s) => ({
+      ...s,
+      website: {
+        id: s.websiteId,
+        url: s.url,
+        domain: s.targetDomain,
+      },
+    }));
+
     return {
-      items,
+      items: formattedItems,
       pagination: {
         page,
         limit,

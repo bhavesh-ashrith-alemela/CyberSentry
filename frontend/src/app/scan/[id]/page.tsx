@@ -131,11 +131,12 @@ export default function ScanReportPage() {
   }, [scanId, fetchCompletedReportData]);
 
   const handleRetry = async () => {
-    if (!scan?.website?.url) return;
+    const targetUrl = scan?.website?.url || scan?.url;
+    if (!targetUrl) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await api.createScan(scan.website.url);
+      const res = await api.createScan(targetUrl);
       if (res.success && res.data.scan.id) {
         router.push(`/scan/${res.data.scan.id}`);
       }
@@ -256,7 +257,7 @@ export default function ScanReportPage() {
       <div className="py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6">
         <StatusStepper
           status={scan?.status || "pending"}
-          url={scan?.website?.url || "Target Website"}
+          url={scan?.website?.url || scan?.url || "Target Website"}
           errorMessage={error || scan?.errorMessage}
           onRetry={handleRetry}
           cookiesCount={cookies.length}
@@ -269,7 +270,11 @@ export default function ScanReportPage() {
   }
 
   // Scan is COMPLETED -> Render Screen 2 Approved Report
-  const website = scan.website;
+  const website = scan.website || {
+    id: scan.websiteId,
+    url: scan.url || "",
+    domain: scan.targetDomain || "",
+  };
   const metrics = report?.metrics || {
     totalCookies: cookies.length,
     thirdPartyCookies: cookies.filter((c) => c.isThirdParty).length,

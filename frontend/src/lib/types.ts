@@ -20,6 +20,8 @@ export interface Scan {
   errorMessage: string | null;
   createdAt: string;
   completedAt: string | null;
+  url?: string;
+  targetDomain?: string;
   website?: {
     id: string;
     url: string;

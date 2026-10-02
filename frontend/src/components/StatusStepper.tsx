@@ -75,12 +75,16 @@ export function StatusStepper({
   else if (status === "analyzing") activeIndex = 2;
   else if (status === "completed") activeIndex = 3;
 
-  let domain = url;
-  try {
-    const parsed = new URL(url.startsWith("http") ? url : `https://${url}`);
-    domain = parsed.hostname;
-  } catch {
-    domain = url;
+  let domain = url || "Target Website";
+  if (url && url !== "Target Website" && url.includes(".")) {
+    try {
+      const parsed = new URL(url.startsWith("http") ? url : `https://${url}`);
+      domain = parsed.hostname;
+    } catch {
+      domain = url;
+    }
+  } else {
+    domain = url || "Target Website";
   }
 
   // 1. FAILED STATE: Clean, calm error card
@@ -184,7 +188,11 @@ export function StatusStepper({
             <h3 className="text-base font-bold text-cs-text truncate">
               {domain}
             </h3>
-            <p className="text-xs text-cs-muted font-mono truncate">{url}</p>
+            {url && url !== "Target Website" ? (
+              <p className="text-xs text-cs-muted font-mono truncate">{url}</p>
+            ) : (
+              <p className="text-xs text-cs-muted font-sans truncate">Connecting safely...</p>
+            )}
           </div>
         </div>
 
