@@ -211,6 +211,23 @@ A foundational design decision was how to handle the execution of `POST /api/sca
   - **Stateless Resilience**: If the user refreshes the page mid-scan, a WebSocket connection breaks and requires complex reconnect handshake logic. With polling, the client simply checks `GET /api/scans/:id` and seamlessly resumes tracking the progress from PostgreSQL!
   - **Proxy & Serverless Compatibility**: WebSockets require stateful sticky sessions and often fail across serverless edge gateways or corporate firewalls. REST polling is universally compatible.
 
+### Container Stability, Concurrency & Cloud Probing (Render 512MB RAM Strategy)
+Hosting a headless Chromium browser on constrained cloud tiers (such as Render's 512MB RAM free tier) requires defensive lifecycle and concurrency controls:
+1. **Strict Concurrency Limiting (`MAX_CONCURRENT_SCANS=1`)**:
+   - Running two parallel Chromium instances on a 512MB container risks an instant out-of-memory kernel termination (`OOMKilled`).
+   - CyberSentry enforces a strict concurrency ceiling (`MAX_CONCURRENT_SCANS=1`). If a new scan request arrives while a crawl is actively running, the API immediately responds with `HTTP 429 Too Many Requests` (`"A scan is already in progress. Please wait a moment."`). The active counter is strictly decremented in a `finally` block to prevent counter leakage.
+2. **Deterministic Browser Lifecycle & Recycling**:
+   - Headless browsers slowly accumulate internal cache, v8 heap allocations, and shared memory handles.
+   - **Proactive Recycling**: The browser instance is automatically closed and recreated every 5 scans (`MAX_SCANS_BEFORE_RECYCLE = 5`).
+   - **Idle Process Cleanup**: If no scans occur for 5 minutes, an idle timer automatically shuts down the background Chromium process to return all memory to the host OS.
+   - **Chromium Memory Flags**: Launched with `--disable-dev-shm-usage`, `--no-sandbox`, `--renderer-process-limit=2`, and `--js-flags=--max-old-space-size=256`.
+3. **Decoupled Health Probing (Liveness vs. Readiness)**:
+   - **Liveness (`GET /health/live`)**: Returns `200 OK` as long as Express is responsive and running. Render's deployment health check probes this path, preventing deployment rollbacks or reboot loops during transient database wake-up delays.
+   - **Readiness (`GET /health/ready`)**: Verifies active connectivity to PostgreSQL. Returns `200 OK` when healthy, and `503 Service Unavailable` if the database is disconnected or unreachable.
+4. **Fail-Fast Crash Policy on Uncaught Exceptions**:
+   - Domain errors (failed page navigations, timeouts, network errors) are caught, marked as `failed` in PostgreSQL, and handled gracefully without interrupting server execution.
+   - Truly unexpected uncaught exceptions (`uncaughtException`, `unhandledRejection`) indicate corrupted internal state. The process logs the critical diagnostic, executes safe synchronous cleanup, and terminates with `process.exit(1)`, allowing container orchestrators (Render / Docker) to immediately spawn a pristine container instance.
+
 ---
 
 ## 3. The Technology Stack "Why": Component-by-Component Rationale
