@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronDown, ChevronUp, AlertCircle, Info, Wrench, CheckCircle2 } from "lucide-react";
+import React, { useState } from "react";
+import { ChevronDown, ChevronUp, AlertCircle, Wrench, CheckCircle2 } from "lucide-react";
 import { Finding, FindingSeverity } from "@/lib/types";
-import { FileLabel, EditorialBadge } from "@/components/ui";
+import { Card, Badge } from "@/components/ui";
 
 interface FindingsListProps {
   findings: Finding[];
@@ -32,7 +32,9 @@ export function FindingsList({ findings }: FindingsListProps) {
     });
   };
 
-  const getSeverityBadgeVariant = (severity: FindingSeverity): "denim" | "olive" | "warning" | "danger" => {
+  const getSeverityBadgeVariant = (
+    severity: FindingSeverity
+  ): "danger" | "warning" | "success" | "neutral" => {
     switch (severity?.toLowerCase()) {
       case "critical":
       case "high":
@@ -40,28 +42,27 @@ export function FindingsList({ findings }: FindingsListProps) {
       case "medium":
         return "warning";
       case "low":
-        return "olive";
+        return "success";
       default:
-        return "denim";
+        return "neutral";
     }
   };
 
   return (
-    <div className="rounded-2xl border border-cs-border bg-cs-paper p-6 sm:p-7 shadow-paper text-cs-ink space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cs-border/80 pb-4">
+    <Card padding="lg" className="space-y-6">
+      {/* Header & Category Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-cs-border pb-4">
         <div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <FileLabel code="EVIDENCE_LOGS" variant="muted" />
-            <EditorialBadge variant="denim" size="xs">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-xl sm:text-2xl font-bold font-sans text-cs-text">
+              Evidence & Findings
+            </h3>
+            <Badge variant="primary" size="sm">
               {filteredFindings.length} Observations
-            </EditorialBadge>
+            </Badge>
           </div>
-          <h3 className="text-xl sm:text-2xl font-bold font-display text-cs-ink">
-            Evidence-Based Findings
-          </h3>
-          <p className="text-xs text-cs-muted font-sans mt-0.5">
-            Deterministic rule evaluations with empirical proofs and technical remediations.
+          <p className="text-xs text-cs-muted">
+            Deterministic rule evaluations with empirical telemetry evidence and remediations.
           </p>
         </div>
 
@@ -70,11 +71,12 @@ export function FindingsList({ findings }: FindingsListProps) {
           {categories.map((cat) => (
             <button
               key={cat}
+              type="button"
               onClick={() => setSelectedCategory(cat)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-mono transition-all select-none ${
+              className={`px-3 py-1 rounded-lg text-xs font-medium transition-all select-none ${
                 selectedCategory === cat
-                  ? "bg-cs-denim text-white font-semibold shadow-xs"
-                  : "bg-cs-cream-deep/40 text-cs-muted hover:text-cs-ink hover:bg-cs-cream-deep/80"
+                  ? "bg-cs-primary text-white font-semibold shadow-xs"
+                  : "bg-slate-100 text-cs-muted hover:text-cs-text hover:bg-slate-200"
               }`}
             >
               {cat}
@@ -83,16 +85,16 @@ export function FindingsList({ findings }: FindingsListProps) {
         </div>
       </div>
 
-      {/* Findings Cards */}
-      <div className="space-y-3.5">
+      {/* Findings List */}
+      <div className="space-y-3">
         {filteredFindings.length === 0 ? (
-          <div className="p-8 text-center rounded-xl bg-cs-cream/40 border border-cs-border">
-            <CheckCircle2 className="h-6 w-6 text-cs-olive mx-auto mb-2" />
-            <p className="text-sm font-bold text-cs-ink font-sans">
-              No Findings in this Category
+          <div className="p-8 text-center rounded-xl bg-slate-50 border border-cs-border">
+            <CheckCircle2 className="h-7 w-7 text-cs-success mx-auto mb-2" />
+            <p className="text-sm font-semibold text-cs-text">
+              No rule-based findings were generated
             </p>
-            <p className="text-xs text-cs-muted font-sans mt-0.5">
-              Zero rule deductions recorded under {selectedCategory} checks.
+            <p className="text-xs text-cs-muted mt-0.5">
+              Zero rule deductions recorded under the {selectedCategory} audit checks.
             </p>
           </div>
         ) : (
@@ -104,41 +106,43 @@ export function FindingsList({ findings }: FindingsListProps) {
             return (
               <div
                 key={finding.id}
-                className="rounded-xl border border-cs-border bg-cs-paper shadow-xs overflow-hidden transition-all duration-200"
+                className="rounded-xl border border-cs-border bg-cs-surface shadow-xs overflow-hidden transition-all duration-200"
               >
-                {/* Clickable Header */}
+                {/* Header Row */}
                 <div
                   onClick={() => toggleExpand(finding.id)}
-                  className="p-4 sm:p-4.5 flex items-start justify-between gap-4 cursor-pointer select-none hover:bg-cs-cream-deep/20 transition-colors"
+                  className="p-4 flex items-start justify-between gap-4 cursor-pointer select-none hover:bg-slate-50/70 transition-colors"
                 >
                   <div className="flex items-start gap-3 flex-1 min-w-0">
                     <div className="mt-0.5 shrink-0">
-                      <AlertCircle className={`h-4 w-4 ${
-                        finding.severity === "critical" || finding.severity === "high"
-                          ? "text-cs-danger"
-                          : finding.severity === "medium"
-                          ? "text-cs-warning"
-                          : "text-cs-olive"
-                      }`} />
+                      <AlertCircle
+                        className={`h-4 w-4 ${
+                          finding.severity === "critical" || finding.severity === "high"
+                            ? "text-cs-danger"
+                            : finding.severity === "medium"
+                            ? "text-amber-500"
+                            : "text-cs-success"
+                        }`}
+                      />
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <EditorialBadge variant={badgeVariant} size="xs" className="uppercase font-bold">
+                        <Badge variant={badgeVariant} size="sm" className="uppercase text-[10px]">
                           {finding.severity}
-                        </EditorialBadge>
-                        <span className="font-mono text-[10px] text-cs-muted">
+                        </Badge>
+                        <span className="font-mono text-[11px] text-cs-muted font-semibold">
                           {finding.ruleId}
                         </span>
-                        <span className="font-mono text-[10px] text-cs-muted/80">
+                        <span className="text-[11px] text-cs-muted">
                           [{category}]
                         </span>
                       </div>
 
-                      <h4 className="text-sm font-bold text-cs-ink font-sans">
+                      <h4 className="text-sm font-bold text-cs-text font-sans">
                         {finding.title}
                       </h4>
-                      <p className="text-xs text-cs-muted font-sans mt-0.5 leading-relaxed">
+                      <p className="text-xs text-cs-muted mt-0.5 leading-relaxed">
                         {finding.description}
                       </p>
                     </div>
@@ -146,16 +150,16 @@ export function FindingsList({ findings }: FindingsListProps) {
 
                   <div className="flex items-center gap-3 shrink-0">
                     {finding.scoreDeduction > 0 ? (
-                      <span className="font-mono text-xs font-bold text-cs-danger px-2 py-0.5 rounded bg-cs-pink-light border border-cs-pink/40">
+                      <span className="text-xs font-semibold text-cs-danger px-2 py-0.5 rounded-md bg-cs-danger-soft border border-red-200">
                         -{finding.scoreDeduction} pts
                       </span>
                     ) : (
-                      <span className="font-mono text-xs text-cs-muted px-2 py-0.5 rounded bg-cs-cream-deep/40">
+                      <span className="text-xs text-cs-muted px-2 py-0.5 rounded-md bg-slate-100">
                         0 pts
                       </span>
                     )}
 
-                    <div className="text-cs-muted hover:text-cs-ink">
+                    <div className="text-cs-muted hover:text-cs-text">
                       {isExpanded ? (
                         <ChevronUp className="h-4 w-4" />
                       ) : (
@@ -167,31 +171,33 @@ export function FindingsList({ findings }: FindingsListProps) {
 
                 {/* Collapsible Details */}
                 {isExpanded && (
-                  <div className="px-5 pb-5 pt-2 border-t border-cs-border/70 bg-cs-cream/30 space-y-4">
+                  <div className="px-5 pb-5 pt-3 border-t border-cs-border bg-slate-50/60 space-y-3.5">
                     {/* Supporting Evidence Panel */}
                     {finding.evidence && Object.keys(finding.evidence).length > 0 && (
                       <div>
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-cs-muted font-bold block mb-1">
+                        <span className="text-[10px] uppercase tracking-wider text-cs-muted font-semibold block mb-1">
                           Empirical Telemetry Payload
                         </span>
-                        <pre className="p-3.5 rounded-xl bg-cs-paper border border-cs-border text-[11px] font-mono text-cs-ink overflow-x-auto max-h-48 leading-relaxed shadow-xs">
+                        <pre className="p-3.5 rounded-xl bg-cs-surface border border-cs-border text-xs font-mono text-cs-text overflow-x-auto max-h-48 leading-relaxed shadow-xs">
                           {JSON.stringify(finding.evidence, null, 2)}
                         </pre>
                       </div>
                     )}
 
                     {/* Remediation Box */}
-                    <div className="p-3.5 rounded-xl bg-cs-denim-light/50 border border-cs-denim/25 flex items-start gap-2.5">
-                      <Wrench className="h-4 w-4 text-cs-denim shrink-0 mt-0.5" />
-                      <div>
-                        <span className="text-xs font-bold text-cs-denim font-mono uppercase tracking-wide">
-                          Recommended Remediation
-                        </span>
-                        <p className="text-xs text-cs-ink font-sans mt-0.5 leading-relaxed">
-                          {finding.remediation}
-                        </p>
+                    {finding.remediation && (
+                      <div className="p-3.5 rounded-xl bg-cs-primary-soft/60 border border-blue-200/80 flex items-start gap-2.5">
+                        <Wrench className="h-4 w-4 text-cs-primary shrink-0 mt-0.5" />
+                        <div>
+                          <span className="text-xs font-bold text-cs-primary uppercase tracking-wide block">
+                            Recommended Remediation
+                          </span>
+                          <p className="text-xs text-cs-text mt-0.5 leading-relaxed">
+                            {finding.remediation}
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -199,6 +205,6 @@ export function FindingsList({ findings }: FindingsListProps) {
           })
         )}
       </div>
-    </div>
+    </Card>
   );
 }

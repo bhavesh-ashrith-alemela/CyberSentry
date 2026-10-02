@@ -1,6 +1,5 @@
 import React from "react";
 import { cn } from "@/lib/utils";
-import { FileLabel } from "./FileLabel";
 
 export interface SectionHeaderProps
   extends Omit<React.HTMLAttributes<HTMLDivElement>, "title"> {
@@ -8,6 +7,7 @@ export interface SectionHeaderProps
   title: React.ReactNode;
   italicWord?: string;
   subtitle?: React.ReactNode;
+  description?: React.ReactNode;
   action?: React.ReactNode;
 }
 
@@ -16,39 +16,36 @@ export function SectionHeader({
   title,
   italicWord,
   subtitle,
+  description,
   action,
   className,
   ...props
 }: SectionHeaderProps) {
+  const desc = description || subtitle;
+
   return (
     <div
       className={cn(
-        "flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-cs-border/80",
+        "flex flex-col sm:flex-row sm:items-end justify-between gap-3 pb-3 border-b border-cs-border",
         className
       )}
       {...props}
     >
       <div>
         {eyebrow && (
-          <div className="mb-2">
-            <FileLabel brackets variant="denim">
-              {eyebrow}
-            </FileLabel>
-          </div>
+          <span className="text-[11px] font-semibold tracking-wider text-cs-primary uppercase block mb-1">
+            {eyebrow}
+          </span>
         )}
 
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-cs-ink font-display">
+        <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-cs-text">
           {title}
-          {italicWord && (
-            <span className="editorial-italic text-cs-denim ml-2 font-normal">
-              {italicWord}
-            </span>
-          )}
+          {italicWord && <span className="italic font-normal ml-1.5">{italicWord}</span>}
         </h2>
 
-        {subtitle && (
-          <p className="mt-1.5 text-xs sm:text-sm text-cs-muted font-sans max-w-2xl leading-relaxed">
-            {subtitle}
+        {desc && (
+          <p className="text-xs sm:text-sm text-cs-muted mt-1 leading-relaxed">
+            {desc}
           </p>
         )}
       </div>

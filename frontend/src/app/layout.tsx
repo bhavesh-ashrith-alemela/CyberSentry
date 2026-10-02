@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Navbar } from "@/components/Navbar";
-import { Footer } from "@/components/Footer";
+import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-  title: "CyberSentry | Web Privacy & Tracking Transparency Dossier",
+  title: "CyberSentry | Web Privacy & Tracking Transparency Platform",
   description:
-    "An explainable cookie consent and web tracking transparency platform. Audit websites for dark patterns, pre-consent tracking, cookies, and privacy compliance.",
+    "An explainable cookie consent and web tracking transparency platform. Audit websites for dark patterns, pre-consent tracking, cookies, and privacy posture.",
 };
 
 export default function RootLayout({
@@ -16,10 +15,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-cs-cream text-cs-ink flex flex-col min-h-screen selection:bg-cs-denim/20 selection:text-cs-denim antialiased">
-        <Navbar />
-        <main className="flex-1 bg-paper-texture">{children}</main>
-        <Footer />
+      <body className="bg-cs-bg text-cs-text antialiased">
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

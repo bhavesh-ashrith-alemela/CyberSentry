@@ -7,30 +7,26 @@ import {
   Globe,
   ArrowRight,
   ShieldCheck,
-  AlertTriangle,
+  Shield,
   Cookie,
   Radio,
   Sliders,
-  FileCheck2,
-  Barcode,
+  ChevronRight,
+  CheckCircle2,
+  AlertCircle,
   Clock,
   Sparkles,
-  ExternalLink,
-  ChevronRight,
-  Loader2,
-  Folder,
 } from "lucide-react";
 import { api } from "@/lib/api";
-import { Scan } from "@/lib/types";
+import { Scan, Report } from "@/lib/types";
 import { formatDate } from "@/lib/formatters";
 import {
-  PaperCard,
-  FolderTab,
-  FolderCard,
-  EditorialBadge,
-  FileLabel,
+  Card,
+  MetricCard,
+  Badge,
+  Button,
+  Input,
   SectionHeader,
-  StampBadge,
 } from "@/components/ui";
 
 const QUICK_SITES = [
@@ -40,29 +36,53 @@ const QUICK_SITES = [
   { name: "bbc.com", url: "https://www.bbc.com" },
 ];
 
-const FOLDER_COLORS = ["denim", "olive", "pink", "paper"] as const;
-
 export default function HomePage() {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Real recent scan history loaded from the database
+  // Real scan history & metrics from backend
   const [recentScans, setRecentScans] = useState<Scan[]>([]);
   const [loadingScans, setLoadingScans] = useState(true);
+  const [errorScans, setErrorScans] = useState<string | null>(null);
+  const [latestReport, setLatestReport] = useState<Report | null>(null);
+  const [prevReport, setPrevReport] = useState<Report | null>(null);
 
   useEffect(() => {
     let isMounted = true;
     api
-      .listScans({ page: 1, limit: 4 })
-      .then((res) => {
-        if (isMounted && res.success) {
-          setRecentScans(res.data || []);
+      .listScans({ page: 1, limit: 5 })
+      .then(async (res) => {
+        if (!isMounted) return;
+        if (res.success && res.data) {
+          const scans = res.data;
+          setRecentScans(scans);
+
+          // Find completed scans to display real aggregate metrics
+          const completedScans = scans.filter((s) => s.status === "completed");
+          if (completedScans.length > 0) {
+            try {
+              const repRes = await api.getReport(completedScans[0].id);
+              if (isMounted && repRes.success && repRes.data) {
+                setLatestReport(repRes.data);
+              }
+              if (completedScans.length > 1) {
+                const prevRes = await api.getReport(completedScans[1].id);
+                if (isMounted && prevRes.success && prevRes.data) {
+                  setPrevReport(prevRes.data);
+                }
+              }
+            } catch {
+              // Non-fatal, metrics will fall back cleanly
+            }
+          }
         }
       })
       .catch((err) => {
-        console.warn("Unable to fetch recent scans:", err.message);
+        if (isMounted) {
+          setErrorScans(err.message || "Unable to fetch recent scans.");
+        }
       })
       .finally(() => {
         if (isMounted) setLoadingScans(false);
@@ -120,472 +140,488 @@ export default function HomePage() {
     setError(null);
   };
 
+  // Helper for score badge styling
+  const getScoreBadge = (score: number | null) => {
+    if (score === null || score === undefined) {
+      return <Badge variant="neutral" size="sm">Pending</Badge>;
+    }
+    if (score >= 80) {
+      return (
+        <Badge variant="success" size="sm">
+          ↑ {score}/100
+        </Badge>
+      );
+    }
+    if (score >= 60) {
+      return (
+        <Badge variant="warning" size="sm">
+          {score}/100
+        </Badge>
+      );
+    }
+    return (
+      <Badge variant="danger" size="sm">
+        {score}/100
+      </Badge>
+    );
+  };
+
   return (
-    <div className="relative overflow-hidden py-10 sm:py-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-16 sm:space-y-24">
-        
-        {/* ====================================================================
-            1. HERO SECTION (Asymmetric 55/45 Editorial Split)
-           ==================================================================== */}
-        <section className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          
-          {/* Left Column (55%): Headline & Scan Dossier Input */}
-          <div className="lg:col-span-7 flex flex-col justify-center">
-            
-            {/* Eyebrow Label */}
-            <div className="mb-4 sm:mb-5">
-              <EditorialBadge variant="default" size="sm" className="font-mono text-[11px] tracking-wider uppercase">
-                PRIVACY ANALYSIS PLATFORM
-              </EditorialBadge>
-            </div>
-
-            {/* Display Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-cs-ink font-display leading-[1.12]">
-              See what a website is{" "}
-              <span className="editorial-italic text-cs-denim block sm:inline font-normal">
-                really doing.
-              </span>
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10 sm:space-y-12">
+      
+      {/* ====================================================================
+          1. HERO / SCANNER SECTION (Two-column Desktop Layout)
+         ==================================================================== */}
+      <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+        {/* Left Column (7 cols): Eyebrow, Heading, Description & Scanner */}
+        <div className="lg:col-span-7 space-y-6">
+          <div className="space-y-2.5">
+            <span className="text-[11px] font-semibold tracking-wider text-cs-primary uppercase block">
+              YOUR PRIVACY. YOUR VISIBILITY.
+            </span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-cs-text font-sans leading-tight">
+              See what websites track about you.
             </h1>
-
-            {/* Supporting Editorial Copy */}
-            <p className="mt-5 text-base sm:text-lg text-cs-muted leading-relaxed font-sans max-w-xl">
-              Understand cookies, third-party trackers and consent behaviour with clear,
-              evidence-based privacy reports.
+            <p className="text-sm sm:text-base text-cs-muted max-w-xl leading-relaxed">
+              Scan a public website to understand its cookies, trackers, consent
+              behaviour and privacy transparency.
             </p>
-
-            {/* Scan URL Tool Box */}
-            <form onSubmit={handleSubmit} className="mt-8 max-w-xl" noValidate>
-              <div className="relative flex flex-col sm:flex-row items-stretch gap-2 p-2 rounded-2xl bg-cs-paper border border-cs-border shadow-paper focus-within:border-cs-denim focus-within:shadow-paper-hover transition-all duration-200">
-                <div className="relative flex-1 flex items-center">
-                  <Globe className="absolute left-3.5 h-4 w-4 text-cs-muted/70" />
-                  <input
-                    type="url"
-                    id="target-url"
-                    aria-label="Website URL"
-                    placeholder="Enter website URL (e.g. example.com)"
-                    value={url}
-                    onChange={(e) => {
-                      setUrl(e.target.value);
-                      if (error) setError(null);
-                    }}
-                    disabled={loading}
-                    className="w-full pl-10 pr-4 py-3 bg-transparent text-sm font-sans text-cs-ink placeholder-cs-muted/60 focus:outline-none"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold text-white bg-cs-denim hover:bg-cs-denim-dark disabled:opacity-50 transition-all duration-200 shadow-sm active:translate-y-0.5 shrink-0"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin text-white" />
-                      <span>Launching Crawler...</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Scan Website</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Validation Feedback Alert */}
-              {error && (
-                <div className="mt-3 p-3.5 rounded-xl bg-cs-danger-bg border border-cs-danger/30 text-xs font-mono text-cs-danger flex items-center gap-2.5">
-                  <AlertTriangle className="h-4 w-4 text-cs-danger shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              {/* Privacy Reassurance Line */}
-              <div className="mt-3 flex items-center gap-2 text-xs text-cs-muted font-sans select-none">
-                <ShieldCheck className="h-4 w-4 text-cs-olive shrink-0" />
-                <span>Your privacy matters. We only scan public websites.</span>
-              </div>
-
-              {/* Quick-test Suggestions */}
-              <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-mono text-cs-muted">
-                <span className="text-cs-muted/70">Quick Audits:</span>
-                {QUICK_SITES.map((site) => (
-                  <button
-                    key={site.url}
-                    type="button"
-                    onClick={() => handleQuickSelect(site.url)}
-                    className="px-2.5 py-1 rounded-md bg-cs-paper border border-cs-border hover:border-cs-denim hover:text-cs-denim text-cs-muted transition-colors shadow-xs"
-                  >
-                    {site.name}
-                  </button>
-                ))}
-              </div>
-            </form>
           </div>
 
-          {/* Right Column (45%): Decorative Privacy Report Dossier Composition */}
-          <div className="lg:col-span-5 relative mt-6 lg:mt-0 flex justify-center">
-            
-            {/* Editorial Handwritten Annotation */}
-            <div className="absolute -top-7 right-4 sm:-top-8 sm:right-6 transform rotate-3 select-none pointer-events-none z-20">
-              <span className="font-display italic text-lg sm:text-xl font-bold text-cs-ink drop-shadow-xs">
-                Know Your Data ↗
-              </span>
+          {/* Scanner Form */}
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
+              <div className="flex-1">
+                <label htmlFor="url-input" className="sr-only">
+                  Website URL
+                </label>
+                <Input
+                  id="url-input"
+                  type="text"
+                  placeholder="Enter website URL (e.g. example.com)"
+                  value={url}
+                  onChange={(e) => {
+                    setUrl(e.target.value);
+                    if (error) setError(null);
+                  }}
+                  leftIcon={<Globe className="h-4 w-4" />}
+                  error={!!error}
+                  disabled={loading}
+                  className="h-12 text-sm shadow-xs"
+                />
+              </div>
+              <Button
+                type="submit"
+                variant="primary"
+                size="lg"
+                loading={loading}
+                className="h-12 px-6 shrink-0 font-semibold shadow-sm"
+              >
+                Scan Website →
+              </Button>
             </div>
 
-            {/* Folder Shell (Tilted Denim Folder) */}
-            <div className="w-full max-w-md transform rotate-1 hover:rotate-0 transition-transform duration-300 relative">
-              
-              {/* Stepped Top Tab */}
-              <div className="flex items-end justify-between px-1">
-                <FolderTab color="denim" size="md">
-                  PRIVACY REPORT
-                </FolderTab>
-                <div className="pb-1">
-                  <StampBadge color="denim" rotate="none">
-                    SAMPLE REPORT
-                  </StampBadge>
+            {/* Error Message */}
+            {error && (
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-cs-danger-soft text-cs-danger text-xs font-medium border border-red-200/60">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {/* Quick Suggestions Chips */}
+            <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs text-cs-muted">
+              <span className="text-[11px] font-medium mr-1">Quick test:</span>
+              {QUICK_SITES.map((site) => (
+                <button
+                  key={site.name}
+                  type="button"
+                  onClick={() => handleQuickSelect(site.url)}
+                  disabled={loading}
+                  className="px-2.5 py-1 rounded-lg bg-cs-surface border border-cs-border hover:border-cs-primary hover:text-cs-primary text-[11px] font-mono transition-colors shadow-xs"
+                >
+                  {site.name}
+                </button>
+              ))}
+            </div>
+          </form>
+        </div>
+
+        {/* Right Column (5 cols): Illustrative Preview Cards (Matching Approved Mockup) */}
+        <div className="lg:col-span-5 flex justify-center lg:justify-end">
+          <div className="relative w-full max-w-sm">
+            {/* Background Soft Mesh Glow */}
+            <div className="absolute -inset-2 bg-gradient-to-tr from-blue-100/50 via-indigo-50/30 to-purple-100/40 rounded-3xl blur-xl -z-10" />
+
+            <div className="p-6 rounded-2xl border border-cs-border bg-gradient-to-b from-white to-slate-50/50 shadow-md space-y-4">
+              {/* Illustrative Target URL Badge */}
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-cs-primary-soft/60 border border-blue-100 text-xs font-mono text-cs-primary">
+                <div className="flex items-center gap-2 truncate">
+                  <Globe className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">https://example.com</span>
+                </div>
+                <div className="flex items-center gap-1 text-[11px] text-cs-success font-semibold shrink-0">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  <span>Audited</span>
                 </div>
               </div>
 
-              {/* Outer Folder Body */}
-              <div className="rounded-2xl rounded-tl-none bg-cs-denim p-3 sm:p-4 shadow-folder">
-                
-                {/* Inside Paper Document Sheet */}
-                <div className="rounded-xl bg-cs-paper border border-cs-border p-5 sm:p-6 text-cs-ink shadow-sm relative overflow-hidden font-mono text-xs">
-                  
-                  {/* Top Header of Sample Card */}
-                  <div className="flex items-start justify-between border-b border-cs-border/80 pb-3 mb-4">
-                    <div>
-                      <span className="text-[10px] uppercase tracking-widest text-cs-muted block">
-                        Target Dossier
-                      </span>
-                      <span className="font-bold text-base text-cs-ink font-sans">
-                        example.com
-                      </span>
-                    </div>
-
-                    {/* Stamped Box */}
-                    <div className="border border-cs-ink/40 p-1.5 rounded text-[9px] font-bold text-center leading-tight tracking-wider text-cs-ink uppercase">
-                      SCAN<br />
-                      ANALYZE<br />
-                      EXPLAIN
+              {/* Illustrative Score Card Card */}
+              <div className="p-5 rounded-xl bg-cs-surface border border-cs-border shadow-xs flex items-center justify-between">
+                <div className="flex items-center gap-3.5">
+                  <div className="h-11 w-11 rounded-xl bg-cs-primary-soft text-cs-primary flex items-center justify-center shrink-0">
+                    <Shield className="h-6 w-6 fill-cs-primary/20 stroke-cs-primary" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-medium text-cs-muted uppercase tracking-wider block">
+                      Privacy Score
+                    </span>
+                    <div className="flex items-baseline gap-1 mt-0.5">
+                      <span className="text-2xl font-bold text-cs-text">78</span>
+                      <span className="text-xs font-medium text-cs-muted">/100</span>
                     </div>
                   </div>
+                </div>
 
-                  {/* Metadata Ledger */}
-                  <div className="space-y-2 text-xs">
-                    <div className="flex items-center justify-between">
-                      <span className="text-cs-muted">Privacy Score:</span>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-sm text-cs-ink">78 / 100</span>
-                        <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-cs-olive-light text-cs-olive border border-cs-olive/30">
-                          Good
+                <Badge variant="success" size="sm" dot>
+                  Good
+                </Badge>
+              </div>
+
+              {/* Sample Indicator Caption */}
+              <div className="flex items-center justify-between pt-1 text-[11px] text-cs-muted">
+                <span className="flex items-center gap-1.5">
+                  <Sparkles className="h-3 w-3 text-cs-primary" />
+                  <span>Deterministic Audit Preview</span>
+                </span>
+                <span className="font-mono text-[10px]">Sample</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ====================================================================
+          2. FOUR QUICK METRIC CARDS (Backed by Real Database Data)
+         ==================================================================== */}
+      <section className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Metric 1: Total Cookies */}
+          <MetricCard
+            label="Total Cookies"
+            value={latestReport ? latestReport.metrics.totalCookies : "—"}
+            icon={<Cookie className="h-4 w-4" />}
+            delta={
+              latestReport && prevReport
+                ? `${latestReport.metrics.totalCookies >= prevReport.metrics.totalCookies ? "+" : ""}${
+                    latestReport.metrics.totalCookies - prevReport.metrics.totalCookies
+                  } vs. last scan`
+                : latestReport
+                ? "Recent scan data"
+                : "No scans yet"
+            }
+            deltaType={
+              latestReport && prevReport
+                ? latestReport.metrics.totalCookies <= prevReport.metrics.totalCookies
+                  ? "positive"
+                  : "negative"
+                : "neutral"
+            }
+          />
+
+          {/* Metric 2: Network Requests */}
+          <MetricCard
+            label="Network Requests"
+            value={latestReport ? latestReport.metrics.thirdPartyRequests : "—"}
+            icon={<Radio className="h-4 w-4" />}
+            delta={
+              latestReport && prevReport
+                ? `${latestReport.metrics.thirdPartyRequests >= prevReport.metrics.thirdPartyRequests ? "+" : ""}${
+                    latestReport.metrics.thirdPartyRequests - prevReport.metrics.thirdPartyRequests
+                  } vs. last scan`
+                : latestReport
+                ? "Outbound third-party"
+                : "No scans yet"
+            }
+            deltaType="neutral"
+          />
+
+          {/* Metric 3: Trackers Found */}
+          <MetricCard
+            label="Trackers Found"
+            value={latestReport ? latestReport.metrics.totalTrackers : "—"}
+            icon={<Globe className="h-4 w-4" />}
+            delta={
+              latestReport && prevReport
+                ? `${latestReport.metrics.totalTrackers >= prevReport.metrics.totalTrackers ? "+" : ""}${
+                    latestReport.metrics.totalTrackers - prevReport.metrics.totalTrackers
+                  } vs. last scan`
+                : latestReport
+                ? "Observed domains"
+                : "No scans yet"
+            }
+            deltaType={
+              latestReport && prevReport
+                ? latestReport.metrics.totalTrackers <= prevReport.metrics.totalTrackers
+                  ? "positive"
+                  : "negative"
+                : "neutral"
+            }
+          />
+
+          {/* Metric 4: Privacy Score */}
+          <MetricCard
+            label="Privacy Score"
+            value={latestReport ? `${latestReport.totalScore}/100` : "—"}
+            icon={<ShieldCheck className="h-4 w-4" />}
+            delta={
+              latestReport && prevReport
+                ? `${latestReport.totalScore >= prevReport.totalScore ? "↑" : "↓"} ${Math.abs(
+                    latestReport.totalScore - prevReport.totalScore
+                  )} vs. last scan`
+                : latestReport
+                ? `Grade ${latestReport.grade}`
+                : "No scans yet"
+            }
+            deltaType={
+              latestReport && prevReport
+                ? latestReport.totalScore >= prevReport.totalScore
+                  ? "positive"
+                  : "negative"
+                : "neutral"
+            }
+          />
+        </div>
+      </section>
+
+      {/* ====================================================================
+          3. RECENT SCANS SECTION (Real Database Records & Table/Card View)
+         ==================================================================== */}
+      <section className="space-y-4">
+        <SectionHeader
+          title="Recent Scans"
+          action={
+            <Link
+              href="/history"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-cs-primary hover:text-cs-primary-hover transition-colors group"
+            >
+              <span>View All</span>
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          }
+        />
+
+        {/* Loading Skeleton */}
+        {loadingScans ? (
+          <Card padding="none" className="divide-y divide-cs-border">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="p-4 flex items-center justify-between animate-pulse">
+                <div className="flex items-center gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-slate-200" />
+                  <div className="space-y-1.5">
+                    <div className="h-4 w-32 bg-slate-200 rounded" />
+                    <div className="h-3 w-20 bg-slate-100 rounded" />
+                  </div>
+                </div>
+                <div className="h-6 w-16 bg-slate-200 rounded-full" />
+              </div>
+            ))}
+          </Card>
+        ) : errorScans ? (
+          /* Error State */
+          <Card padding="md" className="text-center py-8">
+            <AlertCircle className="h-7 w-7 text-cs-danger mx-auto mb-2" />
+            <p className="text-sm font-semibold text-cs-text">Unable to load recent scans</p>
+            <p className="text-xs text-cs-muted mt-1">{errorScans}</p>
+          </Card>
+        ) : recentScans.length === 0 ? (
+          /* Empty State */
+          <Card padding="lg" className="text-center py-12 space-y-3">
+            <div className="h-12 w-12 rounded-2xl bg-slate-100 text-cs-muted flex items-center justify-center mx-auto">
+              <Clock className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-cs-text">No privacy scans yet</h3>
+              <p className="text-xs text-cs-muted mt-1 max-w-sm mx-auto">
+                Enter a website URL above to initiate your first automated telemetry audit.
+              </p>
+            </div>
+          </Card>
+        ) : (
+          /* Table View (Desktop) & Card View (Mobile) */
+          <Card padding="none" className="overflow-hidden">
+            {/* Desktop Table */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left text-xs" aria-label="Recent Scans Table">
+                <thead className="bg-slate-50/70 border-b border-cs-border text-cs-muted uppercase text-[10px] font-semibold tracking-wider">
+                  <tr>
+                    <th scope="col" className="py-3.5 px-5">Website</th>
+                    <th scope="col" className="py-3.5 px-4">Scan Date</th>
+                    <th scope="col" className="py-3.5 px-4">Privacy Score</th>
+                    <th scope="col" className="py-3.5 px-4">Status</th>
+                    <th scope="col" className="py-3.5 px-5 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-cs-border">
+                  {recentScans.map((scan) => {
+                    const domain = scan.website?.domain || scan.website?.url || "Unknown Website";
+                    const statusVariant =
+                      scan.status === "completed"
+                        ? "success"
+                        : scan.status === "failed"
+                        ? "danger"
+                        : "primary";
+
+                    return (
+                      <tr
+                        key={scan.id}
+                        onClick={() => router.push(`/scan/${scan.id}`)}
+                        className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                      >
+                        {/* Domain & Favicon */}
+                        <td className="py-3.5 px-5">
+                          <div className="flex items-center gap-3">
+                            <div className="h-7 w-7 rounded-lg bg-cs-primary-soft text-cs-primary flex items-center justify-center shrink-0">
+                              <Globe className="h-3.5 w-3.5" />
+                            </div>
+                            <span className="font-semibold text-cs-text group-hover:text-cs-primary transition-colors text-sm">
+                              {domain}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Date */}
+                        <td className="py-3.5 px-4 text-cs-muted font-mono text-[11px]">
+                          {formatDate(scan.createdAt)}
+                        </td>
+
+                        {/* Score */}
+                        <td className="py-3.5 px-4">
+                          {getScoreBadge(scan.score)}
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3.5 px-4">
+                          <Badge variant={statusVariant} size="sm" dot className="capitalize">
+                            {scan.status}
+                          </Badge>
+                        </td>
+
+                        {/* Action Chevron */}
+                        <td className="py-3.5 px-5 text-right">
+                          <ChevronRight className="h-4 w-4 text-cs-muted group-hover:text-cs-primary group-hover:translate-x-0.5 transition-all inline-block" />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Card List (Hidden on desktop) */}
+            <div className="sm:hidden divide-y divide-cs-border">
+              {recentScans.map((scan) => {
+                const domain = scan.website?.domain || scan.website?.url || "Unknown Website";
+                const statusVariant =
+                  scan.status === "completed"
+                    ? "success"
+                    : scan.status === "failed"
+                    ? "danger"
+                    : "primary";
+
+                return (
+                  <div
+                    key={scan.id}
+                    onClick={() => router.push(`/scan/${scan.id}`)}
+                    className="p-4 flex items-center justify-between gap-3 active:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="h-8 w-8 rounded-lg bg-cs-primary-soft text-cs-primary flex items-center justify-center shrink-0">
+                        <Globe className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-semibold text-sm text-cs-text truncate">
+                          {domain}
+                        </h4>
+                        <span className="text-[11px] text-cs-muted font-mono block">
+                          {formatDate(scan.createdAt)}
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between">
-                      <span className="text-cs-muted">Transparency Rating:</span>
-                      <span className="font-semibold text-cs-ink">Grade B+</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-cs-muted">Trackers Detected:</span>
-                      <span className="font-bold text-cs-warning">5 detected</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-cs-muted">Cookies Deposited:</span>
-                      <span className="font-bold text-cs-ink">12 observed</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-cs-muted">Pre-Consent State:</span>
-                      <span className="text-cs-safe font-semibold">Safe (Deferred)</span>
-                    </div>
-                  </div>
-
-                  {/* Bottom Strip: Barcode & Disclaimer */}
-                  <div className="mt-5 pt-3 border-t border-cs-border/80 flex items-center justify-between text-[10px] text-cs-muted">
-                    <div className="space-y-0.5">
-                      <span className="block font-mono tracking-widest uppercase">
-                        DOC ID #84920-E
-                      </span>
-                      <span className="block text-[9px] text-cs-muted/80">
-                        * Visual preview only
-                      </span>
-                    </div>
-
-                    <Barcode className="h-7 w-20 text-cs-ink/80 shrink-0" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ====================================================================
-            2. PRIVACY FILES / RECENT SCANS (Real Database Records)
-           ==================================================================== */}
-        <section className="space-y-6">
-          <SectionHeader
-            eyebrow="AUDIT DOSSIER"
-            title="Privacy Files"
-            italicWord="Recent Scans"
-            subtitle="Latest empirical website tracking and consent reports stored in the PostgreSQL database."
-            action={
-              <Link
-                href="/history"
-                className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-cs-denim hover:text-cs-denim-dark transition-colors select-none"
-              >
-                <span>View All Audits</span>
-                <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
-            }
-          />
-
-          {/* Grid of Real Recent Scans */}
-          {loadingScans ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="rounded-2xl border border-cs-border bg-cs-paper p-6 animate-pulse">
-                  <div className="h-4 w-28 bg-cs-cream-deep/60 rounded mb-3" />
-                  <div className="h-3 w-20 bg-cs-cream-deep/40 rounded mb-6" />
-                  <div className="h-6 w-16 bg-cs-cream-deep/60 rounded" />
-                </div>
-              ))}
-            </div>
-          ) : recentScans.length === 0 ? (
-            /* Empty State if DB has no scans yet */
-            <PaperCard variant="default" className="text-center p-8 sm:p-12">
-              <Folder className="h-10 w-10 text-cs-muted mx-auto mb-3 stroke-[1.5]" />
-              <h3 className="text-base font-bold text-cs-ink font-sans">
-                No Privacy Files Recorded Yet
-              </h3>
-              <p className="text-xs sm:text-sm text-cs-muted max-w-md mx-auto mt-1 font-sans">
-                Enter any website address in the scanner above to generate the first
-                transparency report.
-              </p>
-            </PaperCard>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-              {recentScans.map((scan, idx) => {
-                const color = FOLDER_COLORS[idx % FOLDER_COLORS.length];
-                const domain = scan.website?.domain || "Target Website";
-
-                return (
-                  <Link
-                    key={scan.id}
-                    href={`/scan/${scan.id}`}
-                    className="block group focus:outline-none"
-                  >
-                    <FolderCard
-                      tabLabel={domain}
-                      tabColor={color}
-                      bodyColor={color}
-                      interactive
-                      className="h-full"
-                    >
-                      <div className="flex flex-col justify-between h-full min-h-[105px]">
-                        <div>
-                          <div className="flex items-center gap-1.5 text-[11px] font-mono opacity-80 mb-2">
-                            <Clock className="h-3 w-3 shrink-0" />
-                            <span>{formatDate(scan.createdAt)}</span>
-                          </div>
-                          <p className="text-xs truncate font-mono opacity-70">
-                            {scan.website?.url}
-                          </p>
-                        </div>
-
-                        <div className="mt-4 pt-3 border-t border-current/15 flex items-center justify-between">
-                          <div className="flex items-baseline gap-1.5">
-                            <span className="font-mono text-base font-black">
-                              {scan.score !== null ? `${scan.score}` : "—"}
-                            </span>
-                            <span className="font-mono text-[10px] opacity-75">
-                              / 100
-                            </span>
-                            {scan.grade && (
-                              <span className="ml-1 px-1.5 py-0.2 rounded text-[10px] font-mono font-bold uppercase bg-black/10 dark:bg-white/10">
-                                {scan.grade}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-1 text-xs font-mono font-semibold group-hover:translate-x-1 transition-transform">
-                            <span>Report</span>
-                            <ArrowRight className="h-3.5 w-3.5" />
-                          </div>
-                        </div>
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <div className="flex flex-col items-end gap-1">
+                        {getScoreBadge(scan.score)}
+                        <Badge variant={statusVariant} size="sm" dot className="capitalize">
+                          {scan.status}
+                        </Badge>
                       </div>
-                    </FolderCard>
-                  </Link>
+                      <ChevronRight className="h-4 w-4 text-cs-muted" />
+                    </div>
+                  </div>
                 );
               })}
             </div>
-          )}
-        </section>
+          </Card>
+        )}
+      </section>
 
-        {/* ====================================================================
-            3. WHAT CYBERSENTRY ANALYZES (4 Visual Categories)
-           ==================================================================== */}
-        <section className="space-y-6">
-          <SectionHeader
-            eyebrow="AUDIT SCOPE"
-            title="What CyberSentry"
-            italicWord="Analyzes."
-            subtitle="Deterministic browser telemetry captured in real-time across four critical privacy vectors."
-          />
+      {/* ====================================================================
+          4. UNDERSTAND YOUR PRIVACY SECTION (Compact 4-Card Overview)
+         ==================================================================== */}
+      <section className="space-y-4">
+        <SectionHeader
+          eyebrow="WHAT CYBERSENTRY ANALYZES"
+          title="Understand your privacy. Clearly."
+        />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Vector 1: Cookies */}
-            <PaperCard variant="default" interactive className="flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cs-olive-light border border-cs-olive/30 text-cs-olive">
-                    <Cookie className="h-5 w-5" />
-                  </div>
-                  <FileLabel code="[ 01/STORAGE ]" variant="muted" />
-                </div>
-                <h3 className="text-lg font-bold text-cs-ink font-sans">Cookies</h3>
-                <p className="mt-2 text-xs font-semibold text-cs-denim font-sans">
-                  Understand what data is stored in the browser.
-                </p>
-                <p className="mt-2 text-xs text-cs-muted leading-relaxed font-sans">
-                  Audits first vs. third-party cookie persistence, expiry duration, and HttpOnly / Secure transmission security flags.
-                </p>
-              </div>
-            </PaperCard>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Card 1: Cookie Analysis */}
+          <Card hover padding="md" className="space-y-2.5">
+            <div className="h-9 w-9 rounded-xl bg-cs-primary-soft text-cs-primary flex items-center justify-center">
+              <Cookie className="h-4.5 w-4.5" />
+            </div>
+            <h4 className="text-sm font-bold text-cs-text">Cookie Analysis</h4>
+            <p className="text-xs text-cs-muted leading-relaxed">
+              See what cookies are stored and how they are classified across first and third parties.
+            </p>
+          </Card>
 
-            {/* Vector 2: Trackers */}
-            <PaperCard variant="default" interactive className="flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cs-denim-light border border-cs-denim/30 text-cs-denim">
-                    <Radio className="h-5 w-5" />
-                  </div>
-                  <FileLabel code="[ 02/TELEMETRY ]" variant="muted" />
-                </div>
-                <h3 className="text-lg font-bold text-cs-ink font-sans">Trackers</h3>
-                <p className="mt-2 text-xs font-semibold text-cs-denim font-sans">
-                  Identify third-party domains and tracking activity.
-                </p>
-                <p className="mt-2 text-xs text-cs-muted leading-relaxed font-sans">
-                  Captures real-time outbound beacons dispatched to advertising networks, CDNs, social widgets, and analytics platforms.
-                </p>
-              </div>
-            </PaperCard>
+          {/* Card 2: Tracker Detection */}
+          <Card hover padding="md" className="space-y-2.5">
+            <div className="h-9 w-9 rounded-xl bg-cs-primary-soft text-cs-primary flex items-center justify-center">
+              <Radio className="h-4.5 w-4.5" />
+            </div>
+            <h4 className="text-sm font-bold text-cs-text">Tracker Detection</h4>
+            <p className="text-xs text-cs-muted leading-relaxed">
+              Identify third-party domains and tracking activity intercepted during page load.
+            </p>
+          </Card>
 
-            {/* Vector 3: Consent */}
-            <PaperCard variant="default" interactive className="flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cs-pink-light border border-cs-pink/40 text-[#A84B60]">
-                    <Sliders className="h-5 w-5" />
-                  </div>
-                  <FileLabel code="[ 03/CONSENT_UI ]" variant="muted" />
-                </div>
-                <h3 className="text-lg font-bold text-cs-ink font-sans">Consent</h3>
-                <p className="mt-2 text-xs font-semibold text-cs-denim font-sans">
-                  Examine whether consent choices are clear and balanced.
-                </p>
-                <p className="mt-2 text-xs text-cs-muted leading-relaxed font-sans">
-                  Detects dark patterns where &quot;Accept All&quot; is single-click while refusing tracking is hidden behind nested menus.
-                </p>
-              </div>
-            </PaperCard>
+          {/* Card 3: Consent Audit */}
+          <Card hover padding="md" className="space-y-2.5">
+            <div className="h-9 w-9 rounded-xl bg-cs-primary-soft text-cs-primary flex items-center justify-center">
+              <Sliders className="h-4.5 w-4.5" />
+            </div>
+            <h4 className="text-sm font-bold text-cs-text">Consent Audit</h4>
+            <p className="text-xs text-cs-muted leading-relaxed">
+              Understand how consent choices are presented and evaluate choice symmetry.
+            </p>
+          </Card>
 
-            {/* Vector 4: Privacy Indicators */}
-            <PaperCard variant="default" interactive className="flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cs-cream-deep/60 border border-cs-border text-cs-ink">
-                    <FileCheck2 className="h-5 w-5" />
-                  </div>
-                  <FileLabel code="[ 04/EVIDENCE ]" variant="muted" />
-                </div>
-                <h3 className="text-lg font-bold text-cs-ink font-sans">Privacy Indicators</h3>
-                <p className="mt-2 text-xs font-semibold text-cs-denim font-sans">
-                  Turn observed evidence into an explainable score.
-                </p>
-                <p className="mt-2 text-xs text-cs-muted leading-relaxed font-sans">
-                  Every score deduction is mathematically deterministic and mapped to code evidence. Zero LLM hallucinations.
-                </p>
-              </div>
-            </PaperCard>
-          </div>
-        </section>
+          {/* Card 4: Privacy Score */}
+          <Card hover padding="md" className="space-y-2.5">
+            <div className="h-9 w-9 rounded-xl bg-cs-primary-soft text-cs-primary flex items-center justify-center">
+              <ShieldCheck className="h-4.5 w-4.5" />
+            </div>
+            <h4 className="text-sm font-bold text-cs-text">Privacy Score</h4>
+            <p className="text-xs text-cs-muted leading-relaxed">
+              Get a concise transparency assessment with deterministic rule evaluations.
+            </p>
+          </Card>
+        </div>
+      </section>
 
-        {/* ====================================================================
-            4. HOW IT WORKS (3-Step Editorial Process)
-           ==================================================================== */}
-        <section className="space-y-6 pb-6">
-          <SectionHeader
-            eyebrow="AUDIT PIPELINE"
-            title="How It"
-            italicWord="Works."
-            subtitle="The three-phase automated crawl, analysis, and forensic verification pipeline."
-          />
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Step 1 */}
-            <PaperCard variant="default" className="relative">
-              <div className="flex items-center justify-between mb-4">
-                <span className="font-mono text-2xl font-black text-cs-denim">
-                  01
-                </span>
-                <EditorialBadge variant="default" size="xs">
-                  PHASE 1
-                </EditorialBadge>
-              </div>
-              <h4 className="text-base font-bold text-cs-ink font-sans">
-                Submit Public Website
-              </h4>
-              <p className="mt-2 text-xs text-cs-muted leading-relaxed font-sans">
-                Provide a website address. CyberSentry launches an isolated, headless Chromium incognito sandbox with route-level SSRF defense.
-              </p>
-            </PaperCard>
-
-            {/* Step 2 */}
-            <PaperCard variant="default" className="relative">
-              <div className="flex items-center justify-between mb-4">
-                <span className="font-mono text-2xl font-black text-cs-denim">
-                  02
-                </span>
-                <EditorialBadge variant="default" size="xs">
-                  PHASE 2
-                </EditorialBadge>
-              </div>
-              <h4 className="text-base font-bold text-cs-ink font-sans">
-                Intercept Observable Telemetry
-              </h4>
-              <p className="mt-2 text-xs text-cs-muted leading-relaxed font-sans">
-                The crawler records client-side storage, outbound tracking requests, and evaluates cookie banner layout balance and choices.
-              </p>
-            </PaperCard>
-
-            {/* Step 3 */}
-            <PaperCard variant="default" className="relative">
-              <div className="flex items-center justify-between mb-4">
-                <span className="font-mono text-2xl font-black text-cs-denim">
-                  03
-                </span>
-                <EditorialBadge variant="default" size="xs">
-                  PHASE 3
-                </EditorialBadge>
-              </div>
-              <h4 className="text-base font-bold text-cs-ink font-sans">
-                Explainable Privacy Report
-              </h4>
-              <p className="mt-2 text-xs text-cs-muted leading-relaxed font-sans">
-                A deterministic score (0–100) and actionable remediation checklist are computed and stored with complete evidence in PostgreSQL.
-              </p>
-            </PaperCard>
-          </div>
-        </section>
-
-      </div>
     </div>
   );
 }

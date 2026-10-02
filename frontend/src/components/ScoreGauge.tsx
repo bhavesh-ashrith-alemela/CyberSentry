@@ -1,6 +1,7 @@
 "use client";
 
-import { EditorialBadge } from "@/components/ui";
+import React from "react";
+import { Card, Badge } from "@/components/ui";
 
 interface ScoreGaugeProps {
   score: number;
@@ -11,59 +12,57 @@ interface ScoreGaugeProps {
 export function ScoreGauge({ score, grade, className = "" }: ScoreGaugeProps) {
   const radius = 64;
   const circumference = 2 * Math.PI * radius;
-  const strokeDashoffset = circumference - (Math.min(100, Math.max(0, score)) / 100) * circumference;
+  const clampedScore = Math.min(100, Math.max(0, score));
+  const strokeDashoffset = circumference - (clampedScore / 100) * circumference;
 
-  let assessment = "Severe Privacy Risks";
-  let gradeVariant: "safe" | "denim" | "olive" | "warning" | "danger" = "danger";
+  let assessment = "Elevated Tracking Exposure";
+  let gradeVariant: "success" | "primary" | "warning" | "danger" = "danger";
   let ringColor = "stroke-cs-danger";
 
   if (score >= 90) {
     assessment = "High Transparency Posture";
-    gradeVariant = "safe";
-    ringColor = "stroke-cs-safe";
+    gradeVariant = "success";
+    ringColor = "stroke-cs-success";
   } else if (score >= 80) {
     assessment = "Good Privacy Transparency";
-    gradeVariant = "denim";
-    ringColor = "stroke-cs-denim";
-  } else if (score >= 70) {
+    gradeVariant = "primary";
+    ringColor = "stroke-cs-primary";
+  } else if (score >= 65) {
     assessment = "Moderate Tracking Observed";
-    gradeVariant = "olive";
-    ringColor = "stroke-cs-olive";
-  } else if (score >= 55) {
-    assessment = "Elevated Tracking Exposure";
     gradeVariant = "warning";
     ringColor = "stroke-cs-warning";
   }
 
   return (
-    <div
-      className={`rounded-2xl border border-cs-border bg-cs-paper p-6 sm:p-7 shadow-paper text-cs-ink flex flex-col items-center justify-between text-center relative overflow-hidden ${className}`}
+    <Card
+      padding="lg"
+      className={`flex flex-col items-center justify-between text-center relative overflow-hidden ${className}`}
     >
       {/* Eyebrow Label */}
-      <div className="w-full text-center border-b border-cs-border/70 pb-3 mb-4">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-cs-muted font-bold block">
+      <div className="w-full text-center border-b border-cs-border pb-3 mb-4">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-cs-muted block">
           PRIVACY TRANSPARENCY SCORE
         </span>
       </div>
 
-      {/* SVG Meter with Restrained Editorial Aesthetics */}
+      {/* SVG Meter */}
       <div className="relative flex items-center justify-center my-2">
-        <svg className="h-40 w-40 -rotate-90 transform" viewBox="0 0 160 160">
-          {/* Subtle Paper Track */}
+        <svg className="h-44 w-44 -rotate-90 transform" viewBox="0 0 160 160">
+          {/* Background Track */}
           <circle
             cx="80"
             cy="80"
             r={radius}
-            className="stroke-cs-cream-deep/60"
-            strokeWidth="10"
+            className="stroke-slate-100"
+            strokeWidth="11"
             fill="transparent"
           />
-          {/* Active Editorial Arc */}
+          {/* Active Score Arc */}
           <circle
             cx="80"
             cy="80"
             r={radius}
-            strokeWidth="10"
+            strokeWidth="11"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
             strokeLinecap="round"
@@ -75,31 +74,31 @@ export function ScoreGauge({ score, grade, className = "" }: ScoreGaugeProps) {
         {/* Central Display Score & Grade */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center select-none">
           <div className="flex items-baseline justify-center">
-            <span className="text-4xl sm:text-5xl font-black font-display tracking-tight text-cs-ink">
+            <span className="text-4xl sm:text-5xl font-bold font-sans tracking-tight text-cs-text">
               {score}
             </span>
-            <span className="text-xs font-mono text-cs-muted ml-0.5 font-bold">
+            <span className="text-xs font-semibold text-cs-muted ml-0.5">
               /100
             </span>
           </div>
 
-          <div className="mt-1">
-            <EditorialBadge variant={gradeVariant} size="xs" className="font-bold">
+          <div className="mt-1.5">
+            <Badge variant={gradeVariant} size="sm" dot>
               GRADE {grade}
-            </EditorialBadge>
+            </Badge>
           </div>
         </div>
       </div>
 
-      {/* Assessment Headline & Methodology Reassurance */}
-      <div className="w-full mt-4 pt-3 border-t border-cs-border/70 text-center space-y-1">
-        <h4 className="text-sm sm:text-base font-bold text-cs-ink font-sans">
+      {/* Assessment Headline & Methodology Note */}
+      <div className="w-full mt-4 pt-3.5 border-t border-cs-border text-center space-y-1">
+        <h4 className="text-sm sm:text-base font-bold text-cs-text font-sans">
           {assessment}
         </h4>
-        <p className="text-[11px] font-sans text-cs-muted leading-tight max-w-xs mx-auto">
-          Deterministic technical rating based on observable client-side telemetry and consent friction.
+        <p className="text-[11px] text-cs-muted leading-tight max-w-xs mx-auto">
+          Based on observable tracking, consent, security and user-control indicators.
         </p>
       </div>
-    </div>
+    </Card>
   );
 }

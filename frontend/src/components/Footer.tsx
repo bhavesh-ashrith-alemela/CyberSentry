@@ -12,7 +12,7 @@ export function Footer() {
               <span>CyberSentry Platform</span>
             </div>
             <p className="text-cs-muted leading-relaxed">
-              An explainable cookie consent and web tracking transparency dossier designed to detect dark patterns, pre-consent tracking, and privacy disclosures with empirical proof.
+              An explainable cookie consent and web tracking transparency platform designed to detect dark patterns, pre-consent tracking, and privacy disclosures with empirical proof.
             </p>
           </div>
 
